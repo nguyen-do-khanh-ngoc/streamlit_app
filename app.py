@@ -55,27 +55,28 @@ div[data-baseweb="number-input"] button {
     color: white !important;
 }
 
-/* Nút bấm TÍNH TOÁN màu hồng */
+/* 4. SỬA NÚT TÍNH TOÁN BẰNG BỘ MÀU XANH MỚI */
 button[data-testid="baseButton-primary"] {
-    background-color: #ff4d6d !important; 
+    background-color: #249E94 !important; /* Màu xanh thứ 3 */
     border: none !important;
     border-radius: 25px !important; 
     padding: 0.75rem 2rem !important;
-    box-shadow: 0 4px 10px rgba(255, 77, 109, 0.4); 
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(36, 158, 148, 0.4); /* Bóng đổ màu xanh 3 mờ 40% */
     width: 100%; 
+    margin-top: 20px !important; 
+    transition: all 0.3s ease;
 }
 
-/* 🟢 SỬA CHỮ TRONG NÚT BẤM 🟢 */
-/* Ép chữ trong nút bấm phải là màu trắng, in đậm, và to hơn */
-button[data-testid="baseButton-primary"] p {
-    color: white !important;
-    font-weight: 900 !important;
+/* Ép màu chữ bên trong nút (Hiện tại đang là màu trắng) */
+button[data-testid="baseButton-primary"] * {
+    color: #ffffff !important; /* Bạn có thể đổi #ffffff thành mã màu khác nếu thích chữ màu khác */
+    font-weight: bold !important;
     font-size: 1.2rem !important;
 }
 
+/* Hiệu ứng khi rê chuột vào nút */
 button[data-testid="baseButton-primary"]:hover {
-    background-color: #c9184a !important; 
+    background-color: #0C7779 !important; /* Chuyển sang màu xanh thứ 2 đậm hơn */
     transform: translateY(-2px); 
 }
 
