@@ -16,7 +16,7 @@ custom_css = """
 
 /* Nền mây trời */
 .stApp {
-    background-image: url("https://wptutbyserahwang.wordpress.com/wp-content/uploads/2020/04/197.jpg?w=560"); 
+    background-image: url("https://wptutbyserahwang.wordpress.com/wp-content/uploads/2019/10/20.gif"); 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
