@@ -14,7 +14,7 @@ custom_css = """
     background-attachment: fixed;
 }
 
-/* Khung kính mờ bo tròn */
+/* Khung kính mờ (Giữ nguyên) */
 .block-container {
     background-color: rgba(255, 255, 255, 0.85); 
     border-radius: 30px; 
@@ -23,7 +23,7 @@ custom_css = """
     margin-top: 2rem;
 }
 
-/* Bo tròn ô nhập số, viền hồng */
+/* Bo tròn ô nhập số, viền hồng (Giữ nguyên) */
 div[data-baseweb="input"] > div, 
 div[data-baseweb="number-input"] > div {
     border-radius: 15px !important; 
@@ -31,17 +31,38 @@ div[data-baseweb="number-input"] > div {
     background-color: #fff0f3 !important; 
 }
 
-/* Nút bấm màu hồng */
+/* 🟢 SỬA LỖI CHỮ TRẮNG Ở ĐÂY 🟢 */
+/* Đép chữ người dùng nhập vào thành màu đỏ đô */
+input {
+    color: #900c3f !important; 
+    -webkit-text-fill-color: #900c3f !important; /* Chống trình duyệt tự đổi màu */
+    font-weight: bold !important;
+    font-size: 1.1rem !important;
+}
+
+/* Đổi màu 2 cái nút cộng/trừ đen thui thành màu hồng nhạt */
+div[data-baseweb="number-input"] button {
+    background-color: #ffb3c6 !important;
+    color: white !important;
+}
+
+/* Nút bấm TÍNH TOÁN màu hồng */
 button[data-testid="baseButton-primary"] {
     background-color: #ff4d6d !important; 
     border: none !important;
     border-radius: 25px !important; 
-    color: white !important;
-    font-weight: bold !important;
     padding: 0.75rem 2rem !important;
     box-shadow: 0 4px 10px rgba(255, 77, 109, 0.4); 
     transition: all 0.3s ease;
-    width: 100%; /* Cho nút bấm dài ra bằng chiều ngang */
+    width: 100%; 
+}
+
+/* 🟢 SỬA CHỮ TRONG NÚT BẤM 🟢 */
+/* Ép chữ trong nút bấm phải là màu trắng, in đậm, và to hơn */
+button[data-testid="baseButton-primary"] p {
+    color: white !important;
+    font-weight: 900 !important;
+    font-size: 1.2rem !important;
 }
 
 button[data-testid="baseButton-primary"]:hover {
@@ -49,7 +70,7 @@ button[data-testid="baseButton-primary"]:hover {
     transform: translateY(-2px); 
 }
 
-/* Chữ màu hồng */
+/* Chữ các tiêu đề màu hồng (Giữ nguyên) */
 h1, h2, h3, h4, p {
     color: #ff4d6d !important;
 }
