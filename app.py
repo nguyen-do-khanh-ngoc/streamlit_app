@@ -480,8 +480,20 @@ for i in range(n_cons):
         b_val = st.number_input("b", value=0.0, step=1.0, key=f"b_{i}", label_visibility="collapsed")
         b_vector.append(b_val)
 
-# Mặc định gán các biến quyết định >= 0 để tiện cho UI đơn giản
-var_signs = [">=0"] * n_vars 
+st.markdown("### 4. Ràng buộc dấu của biến")
+var_signs = []
+cols_bounds = st.columns(n_vars)
+for j in range(n_vars):
+    with cols_bounds[j]:
+        sign_input = st.selectbox(f"Dấu x{j+1}", [">= 0", "<= 0", "Tùy ý (Free)"], key=f"var_sign_{j}")
+        
+        # Chuyển đổi định dạng UI sang định dạng thuật toán backend
+        if ">= 0" in sign_input:
+            var_signs.append(">=0")
+        elif "<= 0" in sign_input:
+            var_signs.append("<=0")
+        else:
+            var_signs.append("free")
 
 # ==========================================
 # 4. NÚT BẤM VÀ HIỂN THỊ KẾT QUẢ
