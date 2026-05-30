@@ -77,16 +77,18 @@ div[data-testid="stButton"] {
     margin-top: 20px !important;
 }
 
-/* 🟢 2. NẶN HÌNH DÁNG NÚT (Ruột bên trong) */
+/* 🟢 NẶN HÌNH DÁNG NÚT */
 button[data-testid="baseButton-primary"] {
     background-color: #3b82f6 !important; 
     border: none !important;
     border-radius: 50px !important; 
     padding: 15px 40px !important; 
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4) !important; 
-    width: 60% !important; /* Nút sẽ chiếm 60% chiều rộng của cái khung đã căn giữa ở trên */
+    width: 100% !important; /* Quan trọng: Ép nó rộng 100% để lấp đầy cái cột ở giữa */
     transition: all 0.3s ease !important;
 }
+
+/* Các đoạn ÉP CHỮ và HIỆU ỨNG RÊ CHUỘT bên dưới vẫn giữ nguyên y xì cũ nha */
 
 /* 🟢 3. ÉP CHỮ BÊN TRONG: TRẮNG BÓC, TO VÀ SIÊU ĐẬM */
 button[data-testid="baseButton-primary"] p,
@@ -763,9 +765,17 @@ def format_equation(var_name, expr_dict, N_vars):
 # 5. NÚT BẤM VÀ HIỂN THỊ KẾT QUẢ
 # ==========================================
 st.write("")
-if st.button("GIẢI BÀI TOÁN", type="primary"):
-    
-    # Truyền luật Pivot mà bạn vừa chọn vào solver
+
+# 🟢 TUYỆT CHIÊU CĂN GIỮA BẰNG CỘT CỦA STREAMLIT
+# Chia màn hình làm 3 cột theo tỷ lệ: Cột trái (1 phần) - Cột giữa (2 phần) - Cột phải (1 phần)
+col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+
+# Nhét cái nút vào đúng cái cột ở giữa
+with col_btn2:
+    btn_solve = st.button("GIẢI BÀI TOÁN", type="primary")
+
+# Nếu nút được bấm thì chạy thuật toán
+if btn_solve:
     solver = SimplexDictionarySolver(
         num_vars=n_vars,
         num_constraints=n_cons,
@@ -775,12 +785,13 @@ if st.button("GIẢI BÀI TOÁN", type="primary"):
         b=b_vector,
         bound_signs=bound_signs,
         var_signs=var_signs,
-        pivot_rule=pivot_rule # 🟢 Truyền luật pivot vào đây
+        pivot_rule=pivot_rule
     )
     
     with st.spinner("Đang tính toán..."):
         solver.solve()
     
+    st.markdown("---")
     st.markdown("---")
     st.markdown("### 📊 KẾT QUẢ")
     
