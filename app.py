@@ -68,21 +68,19 @@ input {
     font-weight: bold !important;
     text-align: center !important; 
 }
-/* 🟢 1. ÉP KHUNG CHỨA NÚT NẰM GIỮA MÀN HÌNH */
-div.stButton {
-    display: flex !important;
-    justify-content: center !important; /* Căn giữa mọi thứ bên trong */
-    margin-top: 20px !important;
-}
 
-/* 🟢 2. NẶN HÌNH DÁNG NÚT: TO HƠN, RỘNG HƠN */
+/* 🟢 1, 2. NẶN HÌNH DÁNG NÚT: TO HƠN, RỘNG HƠN VÀ ÉP RA GIỮA */
 button[data-testid="baseButton-primary"] {
+    display: block !important; /* Ép nó thành một khối độc lập không dính dáng tới ai */
+    margin: 0 auto !important; /* TUYỆT CHIÊU CĂN GIỮA: Tự động đẩy lề trái/phải cho đều nhau */
+    margin-top: 20px !important; /* Khoảng cách với phần bên trên */
+    
     background-color: #3b82f6 !important; 
     border: none !important;
-    border-radius: 50px !important; /* Bo tròn thành viên thuốc */
-    padding: 15px 40px !important; /* Phóng to lớp đệm cho nút mập lên */
+    border-radius: 50px !important; 
+    padding: 15px 40px !important; 
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4) !important; 
-    width: 60% !important; /* Cố định chiều rộng 60% để nó không bị bè ra hết 2 bên */
+    width: 60% !important; 
     transition: all 0.3s ease !important;
 }
 
