@@ -20,7 +20,15 @@ custom_css = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-* { font-family: 'Montserrat', sans-serif !important; }
+/* 🟢 ÁP DỤNG FONT CHỮ CHO TOÀN WEB NHƯNG CHỪA CÁC ICON RA */
+html, body, p, div, h1, h2, h3, h4, h5, h6, span, button, input, label, li, table, td, th {
+    font-family: 'Montserrat', sans-serif !important; 
+}
+
+/* 🟢 TRẢ LẠI FONT BIỂU TƯỢNG (ICON) MẶC ĐỊNH CHO STREAMLIT */
+.material-symbols-rounded, .material-icons, [data-testid="stIconMaterial"] {
+    font-family: 'Material Symbols Rounded', 'Material Icons' !important;
+}
 
 .stApp {
     background-image: url("https://images.pexels.com/photos/37717845/pexels-photo-37717845.jpeg"); 
@@ -73,10 +81,8 @@ button[data-testid="baseButton-primary"] {
 
 /* 🟢 PHẦN 2: ÉP CHỮ BÊN TRONG THÀNH MÀU TRẮNG VÀ IN ĐẬM */
 button[data-testid="baseButton-primary"],
-button[data-testid="baseButton-primary"] p,
-button[data-testid="baseButton-primary"] span,
-button[data-testid="baseButton-primary"] div {
-    color: #ffffff !important; /* Đây mới là lệnh đổi màu chữ thành trắng nè */
+button[data-testid="baseButton-primary"] * {
+    color: #ffffff !important; 
     font-weight: bold !important; 
     font-size: 1.2rem !important; 
 }
@@ -148,7 +154,7 @@ ul[data-baseweb="menu"] li {
 st.markdown(custom_css, unsafe_allow_html=True)
 
 tieu_de_html = """
-<div style="text-align: center; margin-top: -65px; margin-bottom: 30px;">
+<div style="text-align: center; margin-top: -20px; margin-bottom: 30px;">
     <span style="display: inline-block; background: white; padding: 5px 25px; font-size: 24px; font-weight: bold; color: #1e3a8a; border-radius: 10px; border: 2px solid #3b82f6;">
         🧩 QUY HOẠCH TUYẾN TÍNH (SIMPLEX)
     </span>
