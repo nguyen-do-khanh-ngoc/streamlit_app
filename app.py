@@ -26,12 +26,19 @@ custom_css = """
 
 .block-container {
     background-color: rgba(255, 255, 255, 0.95); 
-    border-radius: 15px; 
+    border-radius: 40px !important; 
     padding: 3rem;
     box-shadow: 
-        inset 0 0 0 25px #dbeafe, /* Lớp 1: Đệm xanh nhạt (dày 25px) đẩy ngược vào bên trong */
-        -15px 26px 50px rgba(30, 58, 138, 0.3) !important; /* Lớp 2: Bóng mờ 30 độ rớt ra bên ngoài (Giữ nguyên) */
-    border: 3px outset #3b82f6 !important; 
+        /* Lớp 1 (Trên cùng): Đệm màu xanh nhạt dày 25px */
+        inset 0 0 0 25px #dbeafe, 
+        
+        /* Lớp 2 (Nằm dưới lớp 1): Viền xanh đậm dày 27px. 
+           Bị lớp 25px ở trên đè lên, nó chỉ lòi ra đúng 2px tạo thành cái bo viền cho phần ruột! */
+        inset 0 0 0 27px #3b82f6, 
+        
+        /* Lớp 3: Bóng mờ 30 độ rớt ra ngoài màn hình (Giữ nguyên của bạn) */
+        -15px 26px 50px rgba(30, 58, 138, 0.3) !important;
+    border: 3px double #3b82f6 !important; 
     max-width: 900px !important; 
     margin: auto !important; 
     margin-top: 8vh !important; 
