@@ -7,7 +7,7 @@ import re
 import copy
 
 # ==========================================
-# 1. CÀI ĐẶT GIAO DIỆN & CSS (THEME XANH DƯƠNG)
+# 1. CÀI ĐẶT GIAO DIỆN & CSS
 # ==========================================
 st.set_page_config(page_title="LP Solver - Simplex", layout="centered", initial_sidebar_state="collapsed")
 
@@ -24,21 +24,21 @@ custom_css = """
     background-attachment: fixed;
 }
 
-/* Khung viền nét đứt màu xanh dương */
 .block-container {
     background-color: rgba(255, 255, 255, 0.95); 
     border-radius: 15px; 
     padding: 3rem;
     box-shadow: -15px 26px 50px rgba(30, 58, 138, 0.3) !important; 
     border: 3px dotted #3b82f6 !important; 
-    max-width: 900px !important; /* Nới rộng khung để chứa ma trận */
+    max-width: 900px !important; 
     margin: auto !important; 
     margin-top: 8vh !important; 
     margin-bottom: 8vh !important;
 }
 
 div[data-baseweb="input"] > div, 
-div[data-baseweb="number-input"] > div {
+div[data-baseweb="number-input"] > div,
+div[data-baseweb="select"] > div {
     border-radius: 10px !important; 
     border: 2px solid #93c5fd !important; 
     background-color: #eff6ff !important; 
@@ -76,11 +76,21 @@ button[data-testid="baseButton-primary"]:hover {
 h1, h2, h3, h4, p, label {
     color: #1e3a8a !important;
 }
+
+/* Tùy chỉnh lịch sử các bước lặp */
+.history-eq {
+    background: #f8fafc;
+    border-left: 4px solid #3b82f6;
+    padding: 8px 15px;
+    margin-bottom: 5px;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 1.1rem;
+    color: #0f172a;
+}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# Hiển thị Tiêu đề cắt ngang viền
 tieu_de_html = """
 <div style="text-align: center; margin-top: -65px; margin-bottom: 30px;">
     <span style="display: inline-block; background: white; padding: 5px 25px; font-size: 24px; font-weight: bold; color: #1e3a8a; border-radius: 10px; border: 2px solid #3b82f6;">
@@ -91,7 +101,7 @@ tieu_de_html = """
 st.markdown(tieu_de_html, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CLASS LÕI THUẬT TOÁN (GIỮ NGUYÊN CỦA BẠN)
+# 2. CLASS LÕI THUẬT TOÁN
 # ==========================================
 class SimplexDictionarySolver:
     def __init__(self, num_vars, num_constraints, objective_type, c, A, b, bound_signs, var_signs, pivot_rule="BLAND"):
@@ -318,7 +328,6 @@ class SimplexDictionarySolver:
 
     def extract_solution(self):
         if self.status != "OPTIMAL": return
-
         for n_var in self.N:
             if self.objective_func.get(n_var, Fraction(0)) == 0:
                 has_negative_coeff = False
@@ -335,7 +344,6 @@ class SimplexDictionarySolver:
                             ratio = self.dictionary[b_var]['const'] / abs(coeff)
                             if ratio > 0:
                                 self.has_infinite_solutions = True
-
         self.final_vars = {}
         for j in range(self.original_num_vars):
             orig_var = f"x{j+1}"
@@ -346,16 +354,15 @@ class SimplexDictionarySolver:
                     val = self.dictionary[mapped_var]['const']
                 total_val += val * sign_multiplier
             self.final_vars[orig_var] = total_val
-
         self.Z_opt = self.objective_func['const']
         if self.objective_type == 'MAX':
             self.Z_opt = -self.Z_opt
 
     def plot_feasible_region(self):
         if self.original_num_vars != 2:
-            return None, "Lỗi: Đồ thị chỉ hỗ trợ bài toán có đúng 2 biến quyết định."
+            return None, "Chỉ hỗ trợ vẽ đồ thị bài toán có đúng 2 biến quyết định."
         if self.var_signs[0] != ">=0" or self.var_signs[1] != ">=0":
-            return None, "Lỗi: Đồ thị chỉ hỗ trợ biến x >= 0."
+            return None, "Chỉ hỗ trợ vẽ đồ thị khi biến gốc x >= 0."
 
         A_float = np.array([[float(val) for val in row] for row in self.A])
         b_float = np.array([float(val) for val in self.b])
@@ -373,12 +380,10 @@ class SimplexDictionarySolver:
                     points.append(pt)
                 except np.linalg.LinAlgError:
                     continue 
-
         valid_points = []
         for pt in points:
             if np.all(np.dot(A_full, pt) <= b_full + 1e-7):
                 valid_points.append(pt)
-
         if not valid_points: return None, "Miền khả thi rỗng (Infeasible Region)."
 
         valid_points = np.unique(np.round(valid_points, decimals=5), axis=0)
@@ -407,7 +412,6 @@ class SimplexDictionarySolver:
         ax.set_ylabel('$x_2$', fontsize=10)
         ax.legend(loc="upper right", fontsize=8)
         ax.grid(True, linestyle='--', alpha=0.3)
-
         return fig, "Success"
 
     def solve(self):
@@ -441,13 +445,17 @@ class SimplexDictionarySolver:
 # 3. GIAO DIỆN TƯƠNG TÁC NGƯỜI DÙNG
 # ==========================================
 st.markdown("### 1. Cấu hình bài toán")
-col_cfg1, col_cfg2, col_cfg3 = st.columns(3)
+
+# 🟢 THÊM Ô CHỌN LUẬT VÀO ĐÂY (Bland / Dantzig)
+col_cfg1, col_cfg2, col_cfg3, col_cfg4 = st.columns(4)
 with col_cfg1:
     n_vars = st.number_input("Số biến (n)", min_value=1, max_value=10, value=2, step=1)
 with col_cfg2:
-    n_cons = st.number_input("Số ràng buộc (m)", min_value=1, max_value=10, value=2, step=1)
+    n_cons = st.number_input("Ràng buộc (m)", min_value=1, max_value=10, value=2, step=1)
 with col_cfg3:
     obj_type = st.selectbox("Mục tiêu", ["MAX", "MIN"])
+with col_cfg4:
+    pivot_rule = st.selectbox("Luật Pivot", ["Bland", "Dantzig"])
 
 st.markdown("### 2. Hàm mục tiêu (Z)")
 c_coeffs = []
@@ -486,8 +494,6 @@ cols_bounds = st.columns(n_vars)
 for j in range(n_vars):
     with cols_bounds[j]:
         sign_input = st.selectbox(f"Dấu x{j+1}", [">= 0", "<= 0", "Tùy ý (Free)"], key=f"var_sign_{j}")
-        
-        # Chuyển đổi định dạng UI sang định dạng thuật toán backend
         if ">= 0" in sign_input:
             var_signs.append(">=0")
         elif "<= 0" in sign_input:
@@ -495,12 +501,24 @@ for j in range(n_vars):
         else:
             var_signs.append("free")
 
+# Hàm hỗ trợ in phương trình cho đẹp (đổi từ Fraction sang số thập phân)
+def format_equation(var_name, expr_dict, N_vars):
+    const_val = float(expr_dict.get('const', 0))
+    res = f"{var_name} = {const_val:.2f}"
+    for v in N_vars:
+        coef = float(expr_dict.get(v, 0))
+        if coef != 0:
+            sign = "+" if coef > 0 else "-"
+            res += f" {sign} {abs(coef):.2f}{v}"
+    return res
+
 # ==========================================
-# 4. NÚT BẤM VÀ HIỂN THỊ KẾT QUẢ
+# 5. NÚT BẤM VÀ HIỂN THỊ KẾT QUẢ
 # ==========================================
 st.write("")
 if st.button("GIẢI BÀI TOÁN", type="primary"):
-    # Gắn UI vào Backend
+    
+    # Truyền luật Pivot mà bạn vừa chọn vào solver
     solver = SimplexDictionarySolver(
         num_vars=n_vars,
         num_constraints=n_cons,
@@ -509,7 +527,8 @@ if st.button("GIẢI BÀI TOÁN", type="primary"):
         A=A_matrix,
         b=b_vector,
         bound_signs=bound_signs,
-        var_signs=var_signs
+        var_signs=var_signs,
+        pivot_rule=pivot_rule # 🟢 Truyền luật pivot vào đây
     )
     
     with st.spinner("Đang tính toán..."):
@@ -538,9 +557,32 @@ if st.button("GIẢI BÀI TOÁN", type="primary"):
             for var_name, val in solver.final_vars.items():
                 st.write(f"- {var_name} = {float(val)}")
         
-        # Thử vẽ đồ thị nếu là bài toán 2 biến
+        # Thử vẽ đồ thị
         fig, plot_msg = solver.plot_feasible_region()
         if fig is not None:
             st.pyplot(fig)
         else:
             st.info(f"*(Không vẽ đồ thị: {plot_msg})*")
+    
+    # 🟢 IN LỊCH SỬ CÁC BƯỚC TỪ VỰNG 🟢
+    st.markdown("### 📝 CHI TIẾT TỪ VỰNG (BƯỚC LẶP)")
+    
+    # Dùng hộp thoại ẩn/hiện (expander) để trang web không bị dài quá mức
+    with st.expander("Bấm vào đây để xem chi tiết từng bảng Từ vựng"):
+        if not solver.history:
+            st.info("Chưa có bước lặp nào được ghi nhận.")
+        else:
+            for idx, step in enumerate(solver.history):
+                st.markdown(f"**🔹 BƯỚC {idx}** *(Cơ sở B = {step['B']} | Phi cơ sở N = {step['N']})*")
+                
+                # In hàm Z
+                z_eq = format_equation("Z", step['obj'], step['N'])
+                st.markdown(f"<div class='history-eq'><b>{z_eq}</b></div>", unsafe_allow_html=True)
+                
+                # In các phương trình w_i, x_i
+                for b_var in step['B']:
+                    if b_var in step['dict']:
+                        eq_str = format_equation(b_var, step['dict'][b_var], step['N'])
+                        st.markdown(f"<div class='history-eq'>{eq_str}</div>", unsafe_allow_html=True)
+                
+                st.write("") # Tạo khoảng trống giữa các bước
