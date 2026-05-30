@@ -39,7 +39,7 @@ custom_css = """
     
         /* Lớp 2: Bóng mờ 30 độ rớt ra ngoài màn hình (Giữ nguyên của bạn) */
         -15px 26px 50px rgba(30, 58, 138, 0.3) !important;
-    border: 5px inset #3b82f6 !important; 
+    border: 5px ridge #3b82f6 !important; 
     max-width: 900px !important; 
     margin: auto !important; 
     margin-top: 8vh !important; 
@@ -60,31 +60,31 @@ input {
     font-weight: bold !important;
     text-align: center !important; 
 }
-button[data-testid="baseButton-primary"],
-button[data-testid="baseButton-primary"] p,
-button[data-testid="baseButton-primary"] span,
 button[data-testid="baseButton-primary"] {
-    background-color: #ffffff !important; 
-    font-weight: bold !important; /* In đậm */
-    font-size: 1.2rem !important; /* Phóng to chữ lên chút cho dễ nhìn */
+    background-color: #3b82f6 !important; /* Nền xanh dương */
     border: none !important;
     border-radius: 25px !important; 
     padding: 0.75rem 2rem !important;
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); 
-    width: 100%; 
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4) !important; 
+    width: 100% !important; 
     margin-top: 10px !important; 
-    transition: all 0.3s ease;
+    transition: all 0.3s ease !important;
 }
 
-button[data-testid="baseButton-primary"] * {
-    color: #ffffff !important; 
-    font-weight: bold !important;
-    font-size: 1.2rem !important;
+/* 🟢 PHẦN 2: ÉP CHỮ BÊN TRONG THÀNH MÀU TRẮNG VÀ IN ĐẬM */
+button[data-testid="baseButton-primary"],
+button[data-testid="baseButton-primary"] p,
+button[data-testid="baseButton-primary"] span,
+button[data-testid="baseButton-primary"] div {
+    color: #ffffff !important; /* Đây mới là lệnh đổi màu chữ thành trắng nè */
+    font-weight: bold !important; 
+    font-size: 1.2rem !important; 
 }
 
+/* 🟢 PHẦN 3: HIỆU ỨNG RÊ CHUỘT VÀO NÚT */
 button[data-testid="baseButton-primary"]:hover {
-    background-color: #1d4ed8 !important; 
-    transform: translateY(-2px); 
+    background-color: #1d4ed8 !important; /* Nền xanh đậm hơn chút */
+    transform: translateY(-2px) !important; 
 }
 
 h1, h2, h3, h4, p, label {
