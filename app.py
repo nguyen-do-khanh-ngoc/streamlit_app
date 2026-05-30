@@ -69,18 +69,22 @@ input {
     text-align: center !important; 
 }
 
-/* 🟢 1, 2. NẶN HÌNH DÁNG NÚT: TO HƠN, RỘNG HƠN VÀ ÉP RA GIỮA */
+/* 🟢 1. ÉP CÁI KHUNG BỌC NGOÀI CÙNG CỦA NÚT PHẢI CĂN GIỮA */
+div[data-testid="stButton"] {
+    display: flex !important;
+    justify-content: center !important; /* Đẩy mọi thứ bên trong ra giữa */
+    width: 100% !important; /* Ép khung rộng ngang hết cỡ */
+    margin-top: 20px !important;
+}
+
+/* 🟢 2. NẶN HÌNH DÁNG NÚT (Ruột bên trong) */
 button[data-testid="baseButton-primary"] {
-    display: block !important; /* Ép nó thành một khối độc lập không dính dáng tới ai */
-    margin: 0 auto !important; /* TUYỆT CHIÊU CĂN GIỮA: Tự động đẩy lề trái/phải cho đều nhau */
-    margin-top: 20px !important; /* Khoảng cách với phần bên trên */
-    
     background-color: #3b82f6 !important; 
     border: none !important;
     border-radius: 50px !important; 
     padding: 15px 40px !important; 
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4) !important; 
-    width: 60% !important; 
+    width: 60% !important; /* Nút sẽ chiếm 60% chiều rộng của cái khung đã căn giữa ở trên */
     transition: all 0.3s ease !important;
 }
 
