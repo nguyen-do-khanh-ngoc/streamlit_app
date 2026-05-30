@@ -34,7 +34,7 @@ custom_css = """
     
         /* Lớp 2: Bóng mờ 30 độ rớt ra ngoài màn hình (Giữ nguyên của bạn) */
         -15px 26px 50px rgba(30, 58, 138, 0.3) !important;
-    border: 3px double #3b82f6 !important; 
+    border: 5px double #3b82f6 !important; 
     max-width: 900px !important; 
     margin: auto !important; 
     margin-top: 8vh !important; 
@@ -92,21 +92,39 @@ h1, h2, h3, h4, p, label {
     font-size: 1.1rem;
     color: #0f172a;
 }
+
+/* 1. Trạng thái bình thường: Nền trong suốt, Icon dấu cộng/trừ màu xanh đậm */
+button[aria-label="Step Up"], 
+button[aria-label="Step Down"] {
+    background-color: transparent !important; 
+}
+button[aria-label="Step Up"] svg, 
+button[aria-label="Step Down"] svg {
+    fill: #1e3a8a !important; /* Lệnh đổ màu cho hình SVG */
+    color: #1e3a8a !important;
+    transition: all 0.3s ease;
+}
+
+/* 2. Trạng thái rê chuột (Hover) / Bấm (Active) / Đang chọn (Focus) */
 button[aria-label="Step Up"]:hover, 
 button[aria-label="Step Down"]:hover,
 button[aria-label="Step Up"]:active, 
 button[aria-label="Step Down"]:active,
 button[aria-label="Step Up"]:focus, 
 button[aria-label="Step Down"]:focus {
-    background-color: #3b82f6 !important; /* Đổi nền thành màu xanh dương */
-    color: #ffffff !important; /* Đổi dấu + và - thành màu trắng cho nổi bật */
+    background-color: #3b82f6 !important; /* Đổi nền nút thành xanh sáng */
     border-color: #3b82f6 !important;
 }
 
-/* Chỉnh màu dấu + và - lúc bình thường (không rê chuột) thành xanh đậm */
-button[aria-label="Step Up"], 
-button[aria-label="Step Down"] {
-    color: #1e3a8a !important; 
+/* 3. Đổi icon SVG thành màu trắng khi rê chuột vào */
+button[aria-label="Step Up"]:hover svg, 
+button[aria-label="Step Down"]:hover svg,
+button[aria-label="Step Up"]:active svg, 
+button[aria-label="Step Down"]:active svg,
+button[aria-label="Step Up"]:focus svg, 
+button[aria-label="Step Down"]:focus svg {
+    fill: #ffffff !important; /* Tô trắng hình cộng/trừ */
+    color: #ffffff !important;
 }
 </style>
 """
