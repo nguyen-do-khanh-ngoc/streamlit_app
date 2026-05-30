@@ -131,6 +131,14 @@ button[aria-label="Step Down"]:focus svg {
     fill: #ffffff !important; /* Tô trắng hình cộng/trừ */
     color: #ffffff !important;
 }
+
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div,
+ul[data-baseweb="menu"] li {
+    font-weight: bold !important; 
+    color: #1e3a8a !important; /* Đảm bảo màu xanh đậm tone-sur-tone */
+}
+
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
