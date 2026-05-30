@@ -30,7 +30,7 @@ custom_css = """
     padding: 3rem;
     box-shadow: 
         /* Lớp 1 (Trên cùng): Đệm màu xanh nhạt dày 25px */
-        inset 0 0 0 30px #dbeafe, 
+        inset 0 0 0 20px #dbeafe, 
     
         /* Lớp 2: Bóng mờ 30 độ rớt ra ngoài màn hình (Giữ nguyên của bạn) */
         -15px 26px 50px rgba(30, 58, 138, 0.3) !important;
