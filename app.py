@@ -18,7 +18,7 @@ custom_css = """
 * { font-family: 'Montserrat', sans-serif !important; }
 
 .stApp {
-    background-image: url("https://images.pexels.com/photos/37060630/pexels-photo-37060630.jpeg"); 
+    background-image: url("https://images.pexels.com/photos/10257142/pexels-photo-10257142.jpeg"); 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
