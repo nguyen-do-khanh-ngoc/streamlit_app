@@ -105,40 +105,58 @@ st.markdown(tieu_de_html, unsafe_allow_html=True)
 # ==========================================
 class SimplexDictionarySolver:
     def __init__(self, num_vars, num_constraints, objective_type, c, A, b, bound_signs, var_signs, pivot_rule="BLAND"):
+        """
+        Khởi tạo và lưu trữ các tham số đầu vào gốc.
+        Sử dụng Fraction để triệt tiêu hoàn toàn sai số dấu phẩy động.
+        """
         self.original_num_vars = num_vars
         self.original_num_constraints = num_constraints
-        self.objective_type = objective_type.upper() 
-        self.pivot_rule = pivot_rule.upper() 
-        self.max_iterations = 1000 
-        self.iteration_count = 0 
+        self.objective_type = objective_type.upper() # 'MAX' hoặc 'MIN'
 
+        self.pivot_rule = pivot_rule.upper() # 'BLAND' hoặc 'DANTZIG'
+        self.max_iterations = 1000 # Ngưỡng tối đa để chống lặp vô tận
+        self.iteration_count = 0 # Bộ đếm số bước xoay
+
+        # Chuyển đổi toàn bộ dữ liệu số sang dạng phân số (Fraction) để tránh sai số
         self.c = [Fraction(str(val)) for val in c]
         self.b = [Fraction(str(val)) for val in b]
-        self.A = [[Fraction(str(val)) for row_val in row] for row in A]
+        self.A = [[Fraction(str(val)) for val in row] for row in A]
 
         self.bound_signs = [sign.strip() for sign in bound_signs]
         self.var_signs = [sign.replace(" ", "") for sign in var_signs]
 
-        self.B = [] 
-        self.N = [] 
-        self.dictionary = {} 
-        self.objective_func = {} 
-        self.Z = {'const': Fraction(0)} 
-        self.W = {'const': Fraction(0)} 
+        # Trạng thái hệ thống (Từ vựng)
+        self.B = [] # Tập biến cơ sở
+        self.N = [] # Tập biến phi cơ sở
+        self.dictionary = {} # Lưu trữ hệ phương trình từ vựng: {var_B: {'const': val, var_N1: val, ...}}
+        self.objective_func = {} # Lưu hàm mục tiêu hiện tại (Z hoặc W)
+        self.Z = {'const': Fraction(0)} # Hàm mục tiêu chính (Từ Mã nguồn 1)
+        self.W = {'const': Fraction(0)} # Hàm mục tiêu Pha 1 (Từ Mã nguồn 1)
 
-        self.status = "INITIALIZED" 
+        self.status = "INITIALIZED" # Trạng thái bài toán
         self.has_infinite_solutions = False
-        self.history = [] 
+        self.history = [] # Lưu lại lịch sử từng bước để vẽ UI (hiển thị lên Streamlit)
 
-        self.original_var_mapping = {} 
-        self.var_mapping = {} 
-        self.original_Z_expr = {} 
+        # Biến phụ trợ để lưu vết phục hồi nghiệm nguyên thủy (x <= 0, tùy ý)
+        self.original_var_mapping = {} # Lưu vết biến đổi biến
+        self.var_mapping = {} # Ví dụ: 'x1': [('x1_plus', 1), ('x1_minus', -1)]
+        self.original_Z_expr = {} # Biểu thức Z sau khi chuẩn hóa biến
 
+    # ==========================================
+    # BƯỚC 0: CHUẨN HÓA BÀI TOÁN
+    # ==========================================
     def standardize_problem(self):
+        """
+        Đưa bài toán về dạng chuẩn (MIN & <=) theo đúng mã giả.
+        1. Chuẩn hóa biến (x <= 0, x tùy ý).
+        2. Chuẩn hóa hàm MAX thành MIN.
+        3. Tách dấu '=' thành <= và >=, đảo dấu >= thành <=.
+        """
         new_c = []
         new_A = [[] for _ in range(self.original_num_constraints)]
         var_idx = 1
 
+        # 1. Chuẩn hóa biến (x <= 0, x tùy ý)
         for j in range(self.original_num_vars):
             orig_var = f"x{j+1}"
             sign = self.var_signs[j]
@@ -146,11 +164,12 @@ class SimplexDictionarySolver:
             if sign == ">=0":
                 new_var = f"x{var_idx}"
                 self.original_var_mapping[orig_var] = [new_var]
-                self.var_mapping[orig_var] = [(new_var, 1)] 
+                self.var_mapping[orig_var] = [(new_var, 1)] # 1 là hệ số dương
                 new_c.append(self.c[j])
                 for i in range(self.original_num_constraints): new_A[i].append(self.A[i][j])
                 self.N.append(new_var)
                 var_idx += 1
+
             elif sign == "<=0":
                 new_var = f"x{var_idx}"
                 self.original_var_mapping[orig_var] = [f"-{new_var}"]
@@ -159,6 +178,7 @@ class SimplexDictionarySolver:
                 for i in range(self.original_num_constraints): new_A[i].append(-self.A[i][j])
                 self.N.append(new_var)
                 var_idx += 1
+
             elif sign == "free" or sign == "tùyý":
                 var_plus = f"x{var_idx}"
                 var_minus = f"x{var_idx+1}"
@@ -170,15 +190,18 @@ class SimplexDictionarySolver:
                 self.N.extend([var_plus, var_minus])
                 var_idx += 2
 
+        # 2. Chuẩn hóa hàm mục tiêu (MAX -> MIN)
         is_max = (self.objective_type == 'MAX')
         multiplier = Fraction(-1) if is_max else Fraction(1)
         self.original_Z_expr = {'const': Fraction(0)}
 
         for j, var in enumerate(self.N):
+            # Nếu gốc là MAX, ta nhân -1 để đưa về MIN
             coeff = new_c[j] * multiplier
             self.original_Z_expr[var] = coeff
-            self.Z[var] = coeff 
+            self.Z[var] = coeff # Đồng bộ trạng thái Z ban đầu
 
+        # 3. Chuẩn hóa ràng buộc (Đưa về <=)
         final_A, final_b = [], []
         for i in range(self.original_num_constraints):
             if self.bound_signs[i] == '<=':
@@ -188,6 +211,7 @@ class SimplexDictionarySolver:
                 final_A.append([-val for val in new_A[i]])
                 final_b.append(-self.b[i])
             elif self.bound_signs[i] == '=':
+                # Tách thành <= và >= (rồi đảo dấu >= lập tức nhân -1 thành <=)
                 final_A.append(new_A[i])
                 final_b.append(self.b[i])
                 final_A.append([-val for val in new_A[i]])
@@ -196,57 +220,100 @@ class SimplexDictionarySolver:
         self.A = final_A
         self.b = final_b
 
+    # ==========================================
+    # BƯỚC 1: LẬP TỪ VỰNG VÀ RẼ NHÁNH
+    # ==========================================
     def build_initial_dictionary(self):
+        """
+        Thêm biến bù (slack variables - w_i).
+        Kiểm tra vector b để quyết định đi thẳng Pha 2 hay phải qua Pha 1.
+        """
         for i in range(len(self.b)):
             w_var = f"w{i+1}"
             self.B.append(w_var)
             self.dictionary[w_var] = {'const': self.b[i]}
             for j, x_var in enumerate(self.N):
+                # w_i = b_i - sum(a_ij * x_j) => Hệ số lưu trữ là -a_ij
                 self.dictionary[w_var][x_var] = -self.A[i][j]
+
+        # Rẽ nhánh: Có b_i < 0 không? Nếu có bất kỳ b_i < 0, bắt buộc qua Pha 1
         return any(val < 0 for val in self.b)
 
+    # ==========================================
+    # BƯỚC 2: PHA 1 (TÌM MIỀN KHẢ THI)
+    # ==========================================
     def phase_1(self):
+        """
+        Thêm biến giả x0.
+        Khởi tạo hàm mục tiêu W = x0.
+        Special Pivot để đẩy x0 vào cơ sở.
+        Gọi simplex_loop(W).
+        Xử lý x0 sau khi kết thúc Pha 1.
+        """
+        # 1. Khởi tạo x0 và thêm vào tất cả các phương trình
         self.N.append('x0')
         for w_var in self.B:
             self.dictionary[w_var]['x0'] = Fraction(1)
 
+        # Khởi tạo hàm mục tiêu Pha 1: MIN W = x0
         self.objective_func = {'const': Fraction(0), 'x0': Fraction(1)}
-        self.W = self.objective_func 
+        self.W = self.objective_func # Đồng bộ biến W
         for x_var in self.N:
             if x_var != 'x0': self.objective_func[x_var] = Fraction(0)
 
+        # 2. Special Initial Pivot: Ép x0 vào cơ sở, biến ra là w_k có b_k âm nhất
         leaving_var = min(self.B, key=lambda v: (self.dictionary[v]['const'], self._sort_key(v)))
         self.pivot('x0', leaving_var, self.objective_func)
 
+        # 3. Chạy Simplex Pha 1
         status = self.simplex_loop(self.objective_func)
-        if status == "UNBOUNDED": return False 
+        if status == "UNBOUNDED":
+            return False # Lý thuyết Pha 1 không thể Unbounded, nhưng đặt để an toàn
 
+        # 4. Đánh giá Pha 1
         W_opt = self.objective_func.get('const', Fraction(0))
-        if W_opt > 0: return False 
+        if W_opt > 0:
+            return False # Hệ vô nghiệm
 
         if W_opt == 0:
+            # Nếu x0 vẫn kẹt trong cơ sở B
             if 'x0' in self.B:
                 eq = self.dictionary['x0']
+                # Tìm biến phi cơ sở có hệ số khác 0 để pivot x0 ra
                 valid_entering = [v for v in self.N if v != 'x0' and eq.get(v, Fraction(0)) != 0]
                 if not valid_entering:
+                    # Ràng buộc dư thừa, xóa bỏ
                     self.B.remove('x0')
                     del self.dictionary['x0']
                 else:
+                    # Ưu tiên Bland rule để chọn biến vào
                     entering_var = min(valid_entering, key=self._sort_key)
                     self.pivot(entering_var, 'x0', self.objective_func)
 
+            # Dọn dẹp hoàn toàn x0 khỏi hệ thống
             if 'x0' in self.N: self.N.remove('x0')
             for b_var in self.B:
                 if 'x0' in self.dictionary[b_var]:
                     del self.dictionary[b_var]['x0']
             return True
 
+    # ==========================================
+    # BƯỚC 3: PHA 2 (TÌM NGHIỆM TỐI ƯU)
+    # ==========================================
     def phase_2(self):
+        """
+        Khôi phục hàm Z gốc.
+        Thế các biến cơ sở B vào Z.
+        Gọi simplex_loop(Z).
+        """
+        # 1. Khôi phục hàm Z gốc
         self.objective_func = {'const': self.original_Z_expr['const']}
         for v in self.N: self.objective_func[v] = Fraction(0)
 
+        # 2. Thế biểu thức của các biến (nếu chúng đang ở trong B) vào Z
         for var, coeff in self.original_Z_expr.items():
             if var == 'const' or coeff == 0: continue
+
             if var in self.N:
                 self.objective_func[var] = self.objective_func.get(var, Fraction(0)) + coeff
             elif var in self.B:
@@ -255,50 +322,90 @@ class SimplexDictionarySolver:
                 for n_var in self.N:
                     self.objective_func[n_var] = self.objective_func.get(n_var, Fraction(0)) + coeff * eq.get(n_var, Fraction(0))
 
-        self.Z = self.objective_func 
+        self.Z = self.objective_func # Cập nhật Z thực tế sau khi thế
+
+        # 3. Chạy Simplex Pha 2
         self.status = self.simplex_loop(self.objective_func)
 
+    # ==========================================
+    # BƯỚC 4: HÀM CỐT LÕI - SIMPLEX LOOP
+    # ==========================================
     def simplex_loop(self, objective_func):
+        """
+        Vòng lặp Simplex chung cho cả Pha 1 và Pha 2.
+        - Chọn biến vào (Tùy chọn Quy tắc Bland hoặc Dantzig).
+        - Chọn biến ra (Quy tắc tỷ số, hòa thì dùng Bland).
+        - Cập nhật Dictionary (Pivot).
+        - Tích hợp cơ chế Anti-Cycling (Tự động lùi về Bland nếu đạp vòng).
+        Lưu ý: Dùng yield hoặc lưu vào self.history để theo dõi trạng thái.
+        """
         while True:
+            # --- CƠ CHẾ BỔ SUNG: Chống đạp vòng (Anti-Cycling Fallback) ---
             self.iteration_count += 1
-            if self.iteration_count > self.max_iterations: return "MAX_ITERATIONS_REACHED"
+            if self.iteration_count > self.max_iterations:
+                if self.pivot_rule == "DANTZIG":
+                    # Đang dùng Dantzig mà bị lặp vô hạn -> Ép về Bland để thoát
+                    self.pivot_rule = "BLAND"
+                    self.iteration_count = 0
+                else:
+                    # Nếu dùng Bland mà vẫn quá giới hạn (có thể do lỗi dữ liệu)
+                    return "MAX_ITERATIONS_REACHED"
 
             self._save_history(objective_func)
 
+            # 1. Kiểm tra dừng & Chọn Biến Vào (Entering)
+            # Vì ta luôn dùng hàm MIN, ta tìm các biến phi cơ sở có hệ số < 0
             entering_candidates = [v for v in self.N if objective_func.get(v, Fraction(0)) < 0]
-            if not entering_candidates: return "OPTIMAL" 
 
+            if not entering_candidates:
+                return "OPTIMAL" # Đã tối ưu (Mọi c_j >= 0)
+
+            # --- CƠ CHẾ BỔ SUNG: Lựa chọn Quy tắc ---
             if getattr(self, 'pivot_rule', 'BLAND') == "DANTZIG":
+                # Quy tắc DANTZIG: Chọn biến có hệ số âm nhất
                 min_coeff = min(objective_func[v] for v in entering_candidates)
                 best_entering = [v for v in entering_candidates if objective_func[v] == min_coeff]
+                # Nếu hòa hệ số âm, dùng Bland để bẻ khóa
                 entering_var = min(best_entering, key=self._sort_key)
             else:
+                # Quy tắc BLAND (Mặc định): Chọn biến có chỉ số nhỏ nhất
                 entering_var = min(entering_candidates, key=self._sort_key)
 
+            # 2. Chọn Biến Ra (Leaving) - Quy tắc tỷ số
             leaving_candidates = []
             for b_var in self.B:
                 coeff = self.dictionary[b_var].get(entering_var, Fraction(0))
+                # Trong phương trình: x_B = b - |coeff| * x_in. Ta cần coeff < 0
+                # coef âm nghĩa là khi chuyển vế nó mang dấu dương (b_i - c_ij*x_j)
                 if coeff < 0:
                     ratio = self.dictionary[b_var]['const'] / abs(coeff)
                     leaving_candidates.append((ratio, b_var))
 
-            if not leaving_candidates: return "UNBOUNDED" 
+            if not leaving_candidates:
+                return "UNBOUNDED" # Không bị chặn
 
+            # Tìm ratio nhỏ nhất, nếu hòa thì chọn theo Bland
             min_ratio = min(leaving_candidates, key=lambda x: x[0])[0]
             best_candidates = [var for ratio, var in leaving_candidates if ratio == min_ratio]
             leaving_var = min(best_candidates, key=self._sort_key)
 
+            # 3. Thực hiện Pivot (Cập nhật Dictionary)
             self.pivot(entering_var, leaving_var, objective_func)
 
     def pivot(self, entering_var, leaving_var, objective):
+        """
+        Thực hiện phép thế toán học: biểu diễn entering_var theo leaving_var
+        và cập nhật toàn bộ hệ phương trình, hàm mục tiêu.
+        """
         self.B.remove(leaving_var)
         self.N.remove(entering_var)
         self.B.append(entering_var)
         self.N.append(leaving_var)
 
+        # Rút biến vào từ phương trình của biến ra (Rút entering theo leaving)
         eq = self.dictionary[leaving_var]
         new_eq = {}
-        coeff_enter = eq[entering_var] 
+        coeff_enter = eq[entering_var] # Chắc chắn < 0 theo logic chọn biến ra
 
         new_eq['const'] = eq['const'] / (-coeff_enter)
         for var in eq:
@@ -306,9 +413,11 @@ class SimplexDictionarySolver:
                 new_eq[var] = eq[var] / (-coeff_enter)
         new_eq[leaving_var] = Fraction(1) / coeff_enter
 
+        # Cập nhật Từ vựng cho biến vào
         del self.dictionary[leaving_var]
         self.dictionary[entering_var] = new_eq
 
+        # Thế biến vào (vừa rút) vào các phương trình khác
         for b_var in self.B:
             if b_var == entering_var: continue
             b_eq = self.dictionary[b_var]
@@ -319,6 +428,7 @@ class SimplexDictionarySolver:
                     b_eq[n_var] = b_eq.get(n_var, Fraction(0)) + factor * new_eq.get(n_var, Fraction(0))
                 del b_eq[entering_var]
 
+        # Thế biến vào vào hàm mục tiêu
         factor = objective.get(entering_var, Fraction(0))
         if factor != 0:
             objective['const'] += factor * new_eq['const']
@@ -326,8 +436,18 @@ class SimplexDictionarySolver:
                 objective[n_var] = objective.get(n_var, Fraction(0)) + factor * new_eq.get(n_var, Fraction(0))
             del objective[entering_var]
 
+    # ==========================================
+    # BƯỚC 5: TRÍCH XUẤT KẾT QUẢ
+    # ==========================================
     def extract_solution(self):
+        """
+        Nhận diện Vô số nghiệm (has_infinite_solutions).
+        Tính giá trị biến nguyên thủy.
+        Đảo dấu Z_opt nếu bài toán gốc là MAX.
+        """
         if self.status != "OPTIMAL": return
+
+        # 1. Nhận diện vô số nghiệm
         for n_var in self.N:
             if self.objective_func.get(n_var, Fraction(0)) == 0:
                 has_negative_coeff = False
@@ -335,6 +455,7 @@ class SimplexDictionarySolver:
                     if self.dictionary[b_var].get(n_var, Fraction(0)) < 0:
                         has_negative_coeff = True
                         break
+
                 if not has_negative_coeff:
                     self.has_infinite_solutions = True
                 else:
@@ -344,31 +465,52 @@ class SimplexDictionarySolver:
                             ratio = self.dictionary[b_var]['const'] / abs(coeff)
                             if ratio > 0:
                                 self.has_infinite_solutions = True
+
+        # 2. Tính giá trị biến nguyên thủy
         self.final_vars = {}
         for j in range(self.original_num_vars):
             orig_var = f"x{j+1}"
             total_val = Fraction(0)
+
             for mapped_var, sign_multiplier in self.var_mapping[orig_var]:
                 val = Fraction(0)
                 if mapped_var in self.B:
                     val = self.dictionary[mapped_var]['const']
                 total_val += val * sign_multiplier
+
             self.final_vars[orig_var] = total_val
+
+        # 3. Đảo dấu Z_opt nếu gốc là MAX
         self.Z_opt = self.objective_func['const']
         if self.objective_type == 'MAX':
             self.Z_opt = -self.Z_opt
 
+    # ==========================================
+    # BƯỚC 6: VẼ ĐỒ THỊ MIỀN KHẢ THI (CHỈ HỖ TRỢ 2 BIẾN)
+    # ==========================================
     def plot_feasible_region(self):
+        """
+        Vẽ miền chấp nhận được lên trục tọa độ 2D.
+        Yêu cầu: Bài toán gốc phải có đúng 2 biến và các biến phải >= 0.
+        Trả về đối tượng Figure của matplotlib để render lên Streamlit.
+        """
         if self.original_num_vars != 2:
-            return None, "Chỉ hỗ trợ vẽ đồ thị bài toán có đúng 2 biến quyết định."
-        if self.var_signs[0] != ">=0" or self.var_signs[1] != ">=0":
-            return None, "Chỉ hỗ trợ vẽ đồ thị khi biến gốc x >= 0."
+            return None, "Lỗi: Chỉ hỗ trợ vẽ đồ thị cho bài toán có đúng 2 biến quyết định."
 
+        # Kiểm tra điều kiện >= 0 của 2 biến gốc
+        if self.var_signs[0] != ">=0" or self.var_signs[1] != ">=0":
+            return None, "Lỗi: Đồ thị hiện tại chỉ hỗ trợ các biến gốc có điều kiện >= 0."
+
+        # 1. Chuyển đổi ma trận A và b từ Fraction sang float để dùng Numpy
         A_float = np.array([[float(val) for val in row] for row in self.A])
         b_float = np.array([float(val) for val in self.b])
+
+        # 2. Bổ sung 2 đường thẳng của trục tọa độ (x1 >= 0, x2 >= 0)
+        # Tương đương: -1*x1 + 0*x2 <= 0 và 0*x1 + -1*x2 <= 0
         A_full = np.vstack([A_float, [-1, 0], [0, -1]])
         b_full = np.append(b_float, [0, 0])
 
+        # 3. Tìm TẤT CẢ các giao điểm (Vertices) của các cặp đường thẳng
         num_lines = len(b_full)
         points = []
         for i in range(num_lines):
@@ -376,63 +518,92 @@ class SimplexDictionarySolver:
                 A_sys = np.array([A_full[i], A_full[j]])
                 b_sys = np.array([b_full[i], b_full[j]])
                 try:
+                    # Giải hệ phương trình tuyến tính
                     pt = np.linalg.solve(A_sys, b_sys)
                     points.append(pt)
                 except np.linalg.LinAlgError:
-                    continue 
+                    continue # Bỏ qua nếu 2 đường thẳng song song/trùng nhau
+
+        # 4. Lọc các điểm thỏa mãn TẤT CẢ các ràng buộc (Miền khả thi)
         valid_points = []
         for pt in points:
+            # Kiểm tra A*pt <= b (Cộng thêm 1e-7 để dung sai sai số dấu phẩy động)
             if np.all(np.dot(A_full, pt) <= b_full + 1e-7):
                 valid_points.append(pt)
-        if not valid_points: return None, "Miền khả thi rỗng (Infeasible Region)."
 
+        if not valid_points:
+            return None, "Miền khả thi rỗng (Infeasible Region)."
+
+        # Loại bỏ các điểm trùng lặp
         valid_points = np.unique(np.round(valid_points, decimals=5), axis=0)
+
+        # 5. Sắp xếp các điểm theo góc để vẽ đa giác lồi (Convex Polygon)
         center = np.mean(valid_points, axis=0)
         angles = np.arctan2(valid_points[:, 1] - center[1], valid_points[:, 0] - center[0])
         sorted_indices = np.argsort(angles)
         polygon = valid_points[sorted_indices]
 
-        fig, ax = plt.subplots(figsize=(6, 4))
-        poly_patch = Polygon(polygon, closed=True, fill=True, color='#93c5fd', alpha=0.6, edgecolor='#1e3a8a')
-        ax.add_patch(poly_patch)
-        ax.plot(polygon[:, 0], polygon[:, 1], 'bo', color='#1e3a8a', label='Đỉnh khả thi')
+        # 6. Khởi tạo hình vẽ Matplotlib
+        fig, ax = plt.subplots(figsize=(8, 6))
 
+        # Vẽ đa giác miền khả thi
+        poly_patch = Polygon(polygon, closed=True, fill=True, color='lightblue', alpha=0.6, edgecolor='blue')
+        ax.add_patch(poly_patch)
+
+        # Vẽ các điểm đỉnh (Vertices)
+        ax.plot(polygon[:, 0], polygon[:, 1], 'bo', label='Các đỉnh khả thi')
+
+        # Điểm tối ưu (nếu đã giải xong)
         if self.status == "OPTIMAL" and hasattr(self, 'final_vars'):
             opt_x1 = float(self.final_vars['x1'])
             opt_x2 = float(self.final_vars['x2'])
-            ax.plot(opt_x1, opt_x2, 'ro', color='#dc2626', markersize=8, label=f'Tối ưu ({opt_x1:.2f}, {opt_x2:.2f})')
+            ax.plot(opt_x1, opt_x2, 'ro', markersize=10, label=f'Tối ưu ({opt_x1:.2f}, {opt_x2:.2f})')
 
+        # Thiết lập trục
         max_x = np.max(polygon[:, 0]) * 1.5 if np.max(polygon[:, 0]) > 0 else 10
         max_y = np.max(polygon[:, 1]) * 1.5 if np.max(polygon[:, 1]) > 0 else 10
         ax.set_xlim(-0.5, max_x)
         ax.set_ylim(-0.5, max_y)
-        ax.axhline(0, color='black', linewidth=1)
-        ax.axvline(0, color='black', linewidth=1)
-        ax.set_xlabel('$x_1$', fontsize=10)
-        ax.set_ylabel('$x_2$', fontsize=10)
-        ax.legend(loc="upper right", fontsize=8)
-        ax.grid(True, linestyle='--', alpha=0.3)
+        ax.axhline(0, color='black', linewidth=1.5)
+        ax.axvline(0, color='black', linewidth=1.5)
+
+        ax.set_xlabel('$x_1$', fontsize=12)
+        ax.set_ylabel('$x_2$', fontsize=12)
+        ax.set_title('Đồ thị Miền khả thi 2D', fontsize=14)
+        ax.legend()
+        ax.grid(True, linestyle='--', alpha=0.5)
+
         return fig, "Success"
 
+    # ==========================================
+    # HÀM ĐIỀU PHỐI & PHỤ TRỢ
+    # ==========================================
     def solve(self):
+        """Hàm điều phối chính"""
         self.standardize_problem()
         needs_phase_1 = self.build_initial_dictionary()
+
         if needs_phase_1:
             feasible = self.phase_1()
             if not feasible:
                 self.status = "INFEASIBLE"
                 return
+
         self.phase_2()
         self.extract_solution()
 
     def _sort_key(self, var_name):
+        """Hỗ trợ Quy tắc Bland: Ưu tiên x1 < x2 < w1 < w2"""
+        # Hàm giúp sắp xếp index của x1, x2, w1, w2... cho quy tắc Bland
         match = re.match(r"([a-zA-Z]+)(\d+)", var_name)
         if match:
+            # Nhóm 'x' luôn ưu tiên xếp trước 'w', sau đó so sánh số
             prefix = 0 if match.group(1) == 'x' else 1
             return (prefix, int(match.group(2)))
         return (2, 0)
 
     def _save_history(self, obj_func):
+        """Lưu lại trạng thái để vẽ giao diện từng bước (record history)"""
         state = {
             'B': list(self.B),
             'N': list(self.N),
