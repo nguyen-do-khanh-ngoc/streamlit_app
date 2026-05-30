@@ -92,6 +92,22 @@ h1, h2, h3, h4, p, label {
     font-size: 1.1rem;
     color: #0f172a;
 }
+button[aria-label="Step Up"]:hover, 
+button[aria-label="Step Down"]:hover,
+button[aria-label="Step Up"]:active, 
+button[aria-label="Step Down"]:active,
+button[aria-label="Step Up"]:focus, 
+button[aria-label="Step Down"]:focus {
+    background-color: #3b82f6 !important; /* Đổi nền thành màu xanh dương */
+    color: #ffffff !important; /* Đổi dấu + và - thành màu trắng cho nổi bật */
+    border-color: #3b82f6 !important;
+}
+
+/* Chỉnh màu dấu + và - lúc bình thường (không rê chuột) thành xanh đậm */
+button[aria-label="Step Up"], 
+button[aria-label="Step Down"] {
+    color: #1e3a8a !important; 
+}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
