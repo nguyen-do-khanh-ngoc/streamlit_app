@@ -27,10 +27,10 @@ custom_css = """
 .block-container {
     background-color: rgba(255, 255, 255, 0.95); 
     border-radius: 25px !important; 
-    padding: 5rem;
+    padding: 3rem;
     box-shadow: 
         /* Lớp 1 (Trên cùng): Đệm màu xanh nhạt dày 25px */
-        inset 0 0 0 15px #dbeafe, 
+        inset 0 0 0 30px #dbeafe, 
     
         /* Lớp 2: Bóng mờ 30 độ rớt ra ngoài màn hình (Giữ nguyên của bạn) */
         -15px 26px 50px rgba(30, 58, 138, 0.3) !important;
@@ -45,7 +45,7 @@ div[data-baseweb="input"] > div,
 div[data-baseweb="number-input"] > div,
 div[data-baseweb="select"] > div {
     border-radius: 10px !important; 
-    border: 2px solid #93c5fd !important; 
+    border: 3px solid #93c5fd !important; 
     background-color: #eff6ff !important; 
 }
 
