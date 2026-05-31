@@ -750,17 +750,18 @@ for j in range(n_vars):
 
 st.markdown("### 3. Hệ ràng buộc")
 
-# 🟢 TẠO DÒNG TIÊU ĐỀ (HEADER) NẰM NGAY TRÊN ĐẦU CÁC CỘT
+# 🟢 TẠO DÒNG TIÊU ĐỀ (HEADER) MỎNG NHẸ GIỐNG PHẦN HÀM MỤC TIÊU
 cols_header = st.columns(n_vars + 2)
 for j in range(n_vars):
     with cols_header[j]:
-        st.markdown(f"<div style='text-align: center; font-weight: bold; font-size: 1.1rem; color: #1e3a8a;'>x{j+1}</div>", unsafe_allow_html=True)
+        # Bỏ in đậm, cỡ chữ 14px, căn trái tự nhiên giống hệt nhãn mặc định
+        st.markdown(f"<div style='font-size: 14px; color: #1e3a8a; padding-bottom: 5px;'>x{j+1}</div>", unsafe_allow_html=True)
         
 with cols_header[n_vars]:
-    st.markdown("<div style='text-align: center; font-weight: bold; font-size: 1.1rem; color: #1e3a8a;'>Dấu</div>", unsafe_allow_html=True)
+    st.markdown("<div style='font-size: 14px; color: #1e3a8a; padding-bottom: 5px;'>Dấu</div>", unsafe_allow_html=True)
     
 with cols_header[n_vars + 1]:
-    st.markdown("<div style='text-align: center; font-weight: bold; font-size: 1.1rem; color: #1e3a8a;'>b</div>", unsafe_allow_html=True)
+    st.markdown("<div style='font-size: 14px; color: #1e3a8a; padding-bottom: 5px;'>b</div>", unsafe_allow_html=True)
 
 A_matrix = []
 b_vector = []
@@ -859,7 +860,11 @@ if btn_solve:
         with col_res1:
             st.metric(label="Giá trị tối ưu (Z)", value=float(solver.Z_opt))
         with col_res2:
-            st.write("**Nghiệm nguyên thủy (x):**")
+            if solver.has_infinite_solutions:
+                st.write("**Một trong các nghiệm tối ưu (x):**")
+            else:
+                st.write("**Nghiệm nguyên thủy (x):**")
+                
             for var_name, val in solver.final_vars.items():
                 st.write(f"- {var_name} = {float(val)}")
         
