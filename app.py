@@ -230,9 +230,9 @@ class SimplexDictionarySolver:
         self.iteration_count = 0 # Bộ đếm số bước xoay
 
         # Chuyển đổi toàn bộ dữ liệu số sang dạng phân số (Fraction) để tránh sai số
-        self.c = [Fraction(str(val)) for val in c]
-        self.b = [Fraction(str(val)) for val in b]
-        self.A = [[Fraction(str(val)) for val in row] for row in A]
+        self.c = [Fraction(str(val).strip() if str(val).strip() != "" else "0") for val in c]
+        self.b = [Fraction(str(val).strip() if str(val).strip() != "" else "0") for val in b]
+        self.A = [[Fraction(str(val).strip() if str(val).strip() != "" else "0") for val in row] for row in A]
 
         self.bound_signs = [sign.strip() for sign in bound_signs]
         self.var_signs = [sign.replace(" ", "") for sign in var_signs]
