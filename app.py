@@ -895,8 +895,8 @@ if btn_solve:
                     
                     if enter_var and leave_var:
                         st.markdown(f"<p style='margin-top: -10px; font-size: 1rem;'>"
-                                    f"<span style='color: #dc2626; font-weight: bold;'>🎯 Chuẩn bị xoay - Biến vào: {enter_var[0]}</span> &nbsp; | &nbsp; "
-                                    f"<span style='color: #16a34a; font-weight: bold;'>🚪 Biến ra: {leave_var[0]}</span></p>", 
+                                    f"<span style='color: #2C5EAD; font-weight: bold;'>🎯 Chuẩn bị xoay - Biến vào: {enter_var[0]}</span> &nbsp; | &nbsp; "
+                                    f"<span style='color: #1591DC; font-weight: bold;'>Biến ra: {leave_var[0]}</span></p>", 
                                     unsafe_allow_html=True)
                 else:
                     # Nếu là bước cuối cùng thì không còn biến vào/ra nữa
