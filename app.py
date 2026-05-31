@@ -815,7 +815,8 @@ with col_btn2:
     btn_solve = st.button(
         "GIẢI BÀI TOÁN",
         type="primary",
-        use_container_width=True
+        use_container_width=True,
+        icon=":material/rocket_launch:"
     )
 # Nếu nút được bấm thì chạy thuật toán
 if btn_solve:
@@ -836,7 +837,7 @@ if btn_solve:
     
     st.markdown("---")
     st.markdown("---")
-    st.markdown("### 📊 KẾT QUẢ")
+    st.markdown('### <i class="fa-solid fa-chart-pie" style="color: #1e3a8a; margin-right: 8px;"></i> KẾT QUẢ', unsafe_allow_html=True)
     
     if solver.status == "INFEASIBLE":
         st.markdown('<h5 style="color:#ff4b4b;"><i class="fa-solid fa-circle-xmark"></i> Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).</h5>', unsafe_allow_html=True)
@@ -870,7 +871,7 @@ if btn_solve:
             st.info(f"*(Không vẽ đồ thị: {plot_msg})*")
     
 # 🟢 IN LỊCH SỬ CÁC BƯỚC TỪ VỰNG 🟢
-    st.markdown("### 📝 CHI TIẾT TỪ VỰNG (BƯỚC LẶP)")
+    st.markdown('### <i class="fa-solid fa-table-list" style="color: #1e3a8a; margin-right: 8px;"></i> CHI TIẾT TỪ VỰNG (BƯỚC LẶP)', unsafe_allow_html=True)
     
     with st.expander("Bấm vào đây để xem chi tiết từng bảng Từ vựng"):
         if not solver.history:
