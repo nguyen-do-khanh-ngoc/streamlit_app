@@ -816,7 +816,7 @@ with col_btn2:
         "GIẢI BÀI TOÁN",
         type="primary",
         use_container_width=True,
-        icon=":material/play_circle:"
+        icon=":material/rocket_launch:"
     )
 # Nếu nút được bấm thì chạy thuật toán
 if btn_solve:
