@@ -70,7 +70,6 @@ input {
     -webkit-text-fill-color: #1e3a8a !important;
     font-weight: bold !important;
     text-align: center !important;
-    font-size: 1.15rem !important; /* Phóng to chữ/số bên trong lên cho cân xứng với cái khung mới */
 }
 
 div[data-testid="stButton"]{
