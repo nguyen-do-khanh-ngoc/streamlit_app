@@ -746,7 +746,7 @@ cols_obj = st.columns(n_vars)
 for j in range(n_vars):
     with cols_obj[j]:
         # Đổi thành text_input, giá trị mặc định là chữ "0"
-        val = st.text_input(f"x{j+1}", value="0", key=f"c_{j}") 
+        val = st.text_input(f"x{j+1}", value="", placeholder="0", key=f"A_{i}_{j}", label_visibility=vis) 
         c_coeffs.append(val)
 
 st.markdown("### 3. Hệ ràng buộc")
@@ -763,7 +763,7 @@ for i in range(n_cons):
         with cols_cons[j]:
             # 🟢 TUYỆT CHIÊU: Chỉ hiện chữ x1, x2 ở hàng đầu tiên (i == 0)
             vis = "visible" if i == 0 else "collapsed"
-            val = st.text_input(f"x{j+1}", value="0", key=f"A_{i}_{j}", label_visibility=vis)
+            val = st.text_input(f"x{j+1}", value="", placeholder="0", key=f"A_{i}_{j}", label_visibility=vis)
             row_A.append(val)
     A_matrix.append(row_A)
     
@@ -774,7 +774,7 @@ for i in range(n_cons):
         
     with cols_cons[n_vars + 1]:
         vis = "visible" if i == 0 else "collapsed"
-        b_val = st.text_input("b", value="0", key=f"b_{i}", label_visibility=vis)
+        val = st.text_input(f"x{j+1}", value="", placeholder="0", key=f"A_{i}_{j}", label_visibility=vis)
         b_vector.append(b_val)
 
 st.markdown("### 4. Ràng buộc dấu của biến")
