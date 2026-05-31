@@ -839,16 +839,16 @@ if btn_solve:
     st.markdown("### 📊 KẾT QUẢ")
     
     if solver.status == "INFEASIBLE":
-        st.error(" Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).", icon=":material/cancel:")
+        st.markdown('<h5 style="color:#ff4b4b;"><i class="fa-solid fa-circle-xmark"></i> Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).</h5>', unsafe_allow_html=True)
     elif solver.status == "UNBOUNDED":
-        st.warning(" Bài toán KHÔNG GIỚI NỘI (Unbounded).", icon=":material/warning:")
+        st.markdown('<h5 style="color:#ffaa00;"><i class="fa-solid fa-triangle-exclamation"></i> Bài toán KHÔNG GIỚI NỘI (Unbounded).</h5>', unsafe_allow_html=True)
     elif solver.status == "MAX_ITERATIONS_REACHED":
-        st.error(" Lỗi: Vượt quá số vòng lặp tối đa (Nghi ngờ thoái hóa lặp vô hạn).", icon=":material/block:")
+        st.markdown('<h5 style="color:#ff4b4b;"><i class="fa-solid fa-ban"></i> Lỗi: Vượt quá số vòng lặp tối đa.</h5>', unsafe_allow_html=True)
     elif solver.status == "OPTIMAL":
         if solver.has_infinite_solutions:
-            st.success(" Đã tìm thấy nghiệm tối ưu! (Cảnh báo: Có VÔ SỐ NGHIỆM)", icon=":material/all_inclusive:")
+            st.markdown('<h5 style="color:#21c354;"><i class="fa-solid fa-layer-group"></i> Đã tìm thấy nghiệm tối ưu! (Có VÔ SỐ NGHIỆM)</h5>', unsafe_allow_html=True)
         else:
-            st.success(" Đã tìm thấy nghiệm tối ưu duy nhất!", icon=":material/check_circle:")
+            st.markdown('<h5 style="color:#21c354;"><i class="fa-solid fa-circle-check"></i> Đã tìm thấy nghiệm tối ưu duy nhất!</h5>', unsafe_allow_html=True)
             
         col_res1, col_res2 = st.columns(2)
         with col_res1:
