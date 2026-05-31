@@ -7,6 +7,8 @@ import re
 import copy
 import os
 
+st.markdown('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">', unsafe_allow_html=True)
+
 os.makedirs(".streamlit", exist_ok=True)
 with open(".streamlit/config.toml", "w") as f:
     f.write('[theme]\nprimaryColor="#3b82f6"\n')
@@ -837,16 +839,16 @@ if btn_solve:
     st.markdown("### 📊 KẾT QUẢ")
     
     if solver.status == "INFEASIBLE":
-        st.error(" Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).")
+        st.error(" Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).", icon=":material/cancel:")
     elif solver.status == "UNBOUNDED":
-        st.warning(" Bài toán KHÔNG GIỚI NỘI (Unbounded).")
+        st.warning(" Bài toán KHÔNG GIỚI NỘI (Unbounded).", icon=":material/warning:")
     elif solver.status == "MAX_ITERATIONS_REACHED":
-        st.error(" Lỗi: Vượt quá số vòng lặp tối đa (Nghi ngờ thoái hóa lặp vô hạn).")
+        st.error(" Lỗi: Vượt quá số vòng lặp tối đa (Nghi ngờ thoái hóa lặp vô hạn).", icon=":material/block:")
     elif solver.status == "OPTIMAL":
         if solver.has_infinite_solutions:
-            st.success(" Đã tìm thấy nghiệm tối ưu! (Cảnh báo: Có VÔ SỐ NGHIỆM)")
+            st.success(" Đã tìm thấy nghiệm tối ưu! (Cảnh báo: Có VÔ SỐ NGHIỆM)", icon=":material/all_inclusive:")
         else:
-            st.success(" Đã tìm thấy nghiệm tối ưu duy nhất!")
+            st.success(" Đã tìm thấy nghiệm tối ưu duy nhất!", icon=":material/check_circle:")
             
         col_res1, col_res2 = st.columns(2)
         with col_res1:
