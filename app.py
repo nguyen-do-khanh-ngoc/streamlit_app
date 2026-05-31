@@ -837,16 +837,16 @@ if btn_solve:
     st.markdown("### 📊 KẾT QUẢ")
     
     if solver.status == "INFEASIBLE":
-        st.error("🚨 Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).")
+        st.error(" Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).")
     elif solver.status == "UNBOUNDED":
-        st.warning("⚠️ Bài toán KHÔNG GIỚI NỘI (Unbounded).")
+        st.warning(" Bài toán KHÔNG GIỚI NỘI (Unbounded).")
     elif solver.status == "MAX_ITERATIONS_REACHED":
-        st.error("🚨 Lỗi: Vượt quá số vòng lặp tối đa (Nghi ngờ thoái hóa lặp vô hạn).")
+        st.error(" Lỗi: Vượt quá số vòng lặp tối đa (Nghi ngờ thoái hóa lặp vô hạn).")
     elif solver.status == "OPTIMAL":
         if solver.has_infinite_solutions:
-            st.success("✅ Đã tìm thấy nghiệm tối ưu! (Cảnh báo: Có VÔ SỐ NGHIỆM)")
+            st.success(" Đã tìm thấy nghiệm tối ưu! (Cảnh báo: Có VÔ SỐ NGHIỆM)")
         else:
-            st.success("✅ Đã tìm thấy nghiệm tối ưu duy nhất!")
+            st.success(" Đã tìm thấy nghiệm tối ưu duy nhất!")
             
         col_res1, col_res2 = st.columns(2)
         with col_res1:
@@ -887,12 +887,12 @@ if btn_solve:
                     
                     if enter_var and leave_var:
                         st.markdown(f"<p style='margin-top: -10px; font-size: 1rem;'>"
-                                    f"<span style='color: #2C5EAD; font-weight: bold;'>🎯 Chuẩn bị xoay - Biến vào: {enter_var[0]}</span> &nbsp; | &nbsp; "
+                                    f"<span style='color: #2C5EAD; font-weight: bold;'> Chuẩn bị xoay - Biến vào: {enter_var[0]}</span> &nbsp; | &nbsp; "
                                     f"<span style='color: #1591DC; font-weight: bold;'>Biến ra: {leave_var[0]}</span></p>", 
                                     unsafe_allow_html=True)
                 else:
                     # Nếu là bước cuối cùng thì không còn biến vào/ra nữa
-                    st.markdown(f"<p style='margin-top: -10px; color: #2563eb; font-weight: bold;'>✅ Bảng tối ưu (Kết thúc giải thuật)</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='margin-top: -10px; color: #2563eb; font-weight: bold;'> Bảng tối ưu (Kết thúc giải thuật)</p>", unsafe_allow_html=True)
                 
                 # Xác định tên hàm mục tiêu là W (Pha 1) hay Z (Pha 2)
                 func_name = "W" if 'x0' in step['N'] or 'x0' in step['B'] else "Z"
