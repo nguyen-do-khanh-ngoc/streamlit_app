@@ -745,8 +745,8 @@ c_coeffs = []
 cols_obj = st.columns(n_vars)
 for j in range(n_vars):
     with cols_obj[j]:
-        # Đổi thành text_input, giá trị mặc định là chữ "0"
-        val = st.text_input(f"x{j+1}", value="", placeholder="0", key=f"A_{i}_{j}", label_visibility=vis) 
+        # Đã sửa: Xóa biến i và vis bị dư thừa, đổi tên key thành c_j cho khỏi trùng
+        val = st.text_input(f"x{j+1}", value="", placeholder="0", key=f"c_{j}") 
         c_coeffs.append(val)
 
 st.markdown("### 3. Hệ ràng buộc")
@@ -774,7 +774,8 @@ for i in range(n_cons):
         
     with cols_cons[n_vars + 1]:
         vis = "visible" if i == 0 else "collapsed"
-        val = st.text_input(f"x{j+1}", value="", placeholder="0", key=f"A_{i}_{j}", label_visibility=vis)
+        # Đã sửa: Trả lại đúng chữ "b" và biến b_val
+        b_val = st.text_input("b", value="", placeholder="0", key=f"b_{i}", label_visibility=vis)
         b_vector.append(b_val)
 
 st.markdown("### 4. Ràng buộc dấu của biến")
