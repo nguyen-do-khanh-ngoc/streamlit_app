@@ -54,15 +54,12 @@ html, body, p, div, h1, h2, h3, h4, h5, h6, span, button, input, label, li, tabl
     margin-bottom: 8vh !important;
 }
 
-/* 🟢 LÀM CHO CÁC Ô NHẬP LIỆU BỚT DẸT (MẬP MẠP HƠN) */
 div[data-baseweb="input"] > div, 
 div[data-baseweb="number-input"] > div,
 div[data-baseweb="select"] > div {
     border-radius: 10px !important; 
     border: 3px solid #93c5fd !important; 
-    background-color: #eff6ff !important; 
-    padding-top: 6px !important;    /* Đẩy "trần nhà" lên cao một xíu */
-    padding-bottom: 6px !important; /* Đẩy "sàn nhà" xuống thấp một xíu */
+    background-color: #eff6ff !important;
 }
 
 input {
