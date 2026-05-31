@@ -208,7 +208,7 @@ st.markdown(custom_css, unsafe_allow_html=True)
 tieu_de_html = """
 <div style="text-align: center; margin-top: -20px; margin-bottom: 30px;">
     <span style="display: inline-block; background: white; padding: 10px 30px; font-size: 24px; font-weight: bold; color: #1e3a8a; border-radius: 15px; box-shadow: 0 8px 25px rgba(30, 58, 138, 0.15);">
-        🧩 QUY HOẠCH TUYẾN TÍNH (SIMPLEX)
+        <i class="fa-solid fa-calculator" style="margin-right: 8px;"></i> QUY HOẠCH TUYẾN TÍNH (SIMPLEX)
     </span>
 </div>
 """
@@ -813,7 +813,7 @@ col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
 
 with col_btn2:
     btn_solve = st.button(
-        "🚀 GIẢI BÀI TOÁN",
+        "GIẢI BÀI TOÁN",
         type="primary",
         use_container_width=True
     )
