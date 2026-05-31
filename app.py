@@ -816,7 +816,7 @@ with col_btn2:
         "GIẢI BÀI TOÁN",
         type="primary",
         use_container_width=True,
-        icon=":material/rocket_launch:"
+        icon=":material/play_circle:"
     )
 # Nếu nút được bấm thì chạy thuật toán
 if btn_solve:
@@ -837,7 +837,7 @@ if btn_solve:
     
     st.markdown("---")
     st.markdown("---")
-    st.markdown('### <i class="fa-solid fa-chart-pie" style="color: #1e3a8a; margin-right: 8px;"></i> KẾT QUẢ', unsafe_allow_html=True)
+    st.markdown('### <i class="fa-solid fa-clipboard-check" style="color: #1e3a8a; margin-right: 8px;"></i> KẾT QUẢ', unsafe_allow_html=True)
     
     if solver.status == "INFEASIBLE":
         st.markdown('<h5 style="color:#ff4b4b;"><i class="fa-solid fa-circle-xmark"></i> Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).</h5>', unsafe_allow_html=True)
