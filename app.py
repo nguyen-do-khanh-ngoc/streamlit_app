@@ -818,96 +818,128 @@ with col_btn2:
         use_container_width=True,
         icon=":material/rocket_launch:"
     )
+
 # Nếu nút được bấm thì chạy thuật toán
 if btn_solve:
-    solver = SimplexDictionarySolver(
-        num_vars=n_vars,
-        num_constraints=n_cons,
-        objective_type=obj_type,
-        c=c_coeffs,
-        A=A_matrix,
-        b=b_vector,
-        bound_signs=bound_signs,
-        var_signs=var_signs,
-        pivot_rule=pivot_rule
-    )
-    
-    with st.spinner("Đang tính toán..."):
-        solver.solve()
-    
-    st.markdown("---")
-    st.markdown("---")
-    st.markdown('### <i class="fa-solid fa-clipboard-check" style="color: #1e3a8a; margin-right: 8px;"></i> KẾT QUẢ', unsafe_allow_html=True)
-    
-    if solver.status == "INFEASIBLE":
-        st.markdown('<h5 style="color:#ff4b4b;"><i class="fa-solid fa-circle-xmark"></i> Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).</h5>', unsafe_allow_html=True)
-    elif solver.status == "UNBOUNDED":
-        st.markdown('<h5 style="color:#ffaa00;"><i class="fa-solid fa-triangle-exclamation"></i> Bài toán KHÔNG GIỚI NỘI (Unbounded).</h5>', unsafe_allow_html=True)
-    elif solver.status == "MAX_ITERATIONS_REACHED":
-        st.markdown('<h5 style="color:#ff4b4b;"><i class="fa-solid fa-ban"></i> Lỗi: Vượt quá số vòng lặp tối đa.</h5>', unsafe_allow_html=True)
-    elif solver.status == "OPTIMAL":
-        if solver.has_infinite_solutions:
-            st.markdown('<h5 style="color:#21c354;"><i class="fa-solid fa-layer-group"></i> Đã tìm thấy nghiệm tối ưu! (Có VÔ SỐ NGHIỆM)</h5>', unsafe_allow_html=True)
-        else:
-            st.markdown('<h5 style="color:#21c354;"><i class="fa-solid fa-circle-check"></i> Đã tìm thấy nghiệm tối ưu duy nhất!</h5>', unsafe_allow_html=True)
-            
-        col_res1, col_res2 = st.columns(2)
-        with col_res1:
-            st.metric(label="Giá trị tối ưu (Z)", value=float(solver.Z_opt))
-        with col_res2:
-            if solver.has_infinite_solutions:
-                st.write("**Một trong các nghiệm tối ưu (x):**")
-            else:
-                st.write("**Nghiệm nguyên thủy (x):**")
-                
-            for var_name, val in solver.final_vars.items():
-                st.write(f"- {var_name} = {float(val)}")
+    try:
+        # Bọc khởi tạo trong try-except để bắt lỗi khi Fraction() cố gắng ép kiểu chữ
+        solver = SimplexDictionarySolver(
+            num_vars=n_vars,
+            num_constraints=n_cons,
+            objective_type=obj_type,
+            c=c_coeffs,
+            A=A_matrix,
+            b=b_vector,
+            bound_signs=bound_signs,
+            var_signs=var_signs,
+            pivot_rule=pivot_rule
+        )
         
-        # Thử vẽ đồ thị
-        fig, plot_msg = solver.plot_feasible_region()
-        if fig is not None:
-            st.pyplot(fig)
-        else:
-            st.info(f"*(Không vẽ đồ thị: {plot_msg})*")
-    
-# 🟢 IN LỊCH SỬ CÁC BƯỚC TỪ VỰNG 🟢
-    st.markdown('### <i class="fa-solid fa-table-list" style="color: #1e3a8a; margin-right: 8px;"></i> CHI TIẾT TỪ VỰNG (BƯỚC LẶP)', unsafe_allow_html=True)
-    
-    with st.expander("Bấm vào đây để xem chi tiết từng bảng Từ vựng"):
-        if not solver.history:
-            st.info("Chưa có bước lặp nào được ghi nhận.")
-        else:
-            for idx, step in enumerate(solver.history):
-                st.markdown(f"**🔹 BƯỚC {idx}** *(Cơ sở B = {step['B']} | Phi cơ sở N = {step['N']})*")
+        with st.spinner("Đang tính toán..."):
+            solver.solve()
+        
+        st.markdown("---")
+        st.markdown("---")
+        st.markdown('### <i class="fa-solid fa-clipboard-check" style="color: #1e3a8a; margin-right: 8px;"></i> KẾT QUẢ', unsafe_allow_html=True)
+        
+        if solver.status == "INFEASIBLE":
+            st.markdown('<h5 style="color:#ff4b4b;"><i class="fa-solid fa-circle-xmark"></i> Bài toán VÔ NGHIỆM (Không tìm thấy miền chấp nhận được).</h5>', unsafe_allow_html=True)
+        elif solver.status == "UNBOUNDED":
+            st.markdown('<h5 style="color:#ffaa00;"><i class="fa-solid fa-triangle-exclamation"></i> Bài toán KHÔNG GIỚI NỘI (Unbounded).</h5>', unsafe_allow_html=True)
+        elif solver.status == "MAX_ITERATIONS_REACHED":
+            st.markdown('<h5 style="color:#ff4b4b;"><i class="fa-solid fa-ban"></i> Lỗi: Vượt quá số vòng lặp tối đa.</h5>', unsafe_allow_html=True)
+        elif solver.status == "OPTIMAL":
+            if solver.has_infinite_solutions:
+                st.markdown('<h5 style="color:#21c354;"><i class="fa-solid fa-layer-group"></i> Đã tìm thấy nghiệm tối ưu! (Có VÔ SỐ NGHIỆM)</h5>', unsafe_allow_html=True)
+            else:
+                st.markdown('<h5 style="color:#21c354;"><i class="fa-solid fa-circle-check"></i> Đã tìm thấy nghiệm tối ưu duy nhất!</h5>', unsafe_allow_html=True)
                 
-                # 🟢 DÙNG LOGIC SO SÁNH TẬP HỢP ĐỂ TÌM BIẾN VÀO/RA (Không cần sửa thuật toán gốc)
-                if idx < len(solver.history) - 1:
-                    next_step = solver.history[idx + 1]
-                    # Lấy B của bước sau trừ B của bước hiện tại -> Lòi ra Biến vào
-                    enter_var = list(set(next_step['B']) - set(step['B']))
-                    # Lấy B của bước hiện tại trừ B của bước sau -> Lòi ra Biến ra
-                    leave_var = list(set(step['B']) - set(next_step['B']))
-                    
-                    if enter_var and leave_var:
-                        st.markdown(f"<p style='margin-top: -10px; font-size: 1rem;'>"
-                                    f"<span style='color: #2C5EAD; font-weight: bold;'> Chuẩn bị xoay - Biến vào: {enter_var[0]}</span> &nbsp; | &nbsp; "
-                                    f"<span style='color: #1591DC; font-weight: bold;'>Biến ra: {leave_var[0]}</span></p>", 
-                                    unsafe_allow_html=True)
+            col_res1, col_res2 = st.columns(2)
+            with col_res1:
+                st.metric(label="Giá trị tối ưu (Z)", value=float(solver.Z_opt))
+            with col_res2:
+                if solver.has_infinite_solutions:
+                    st.write("**Một trong các nghiệm tối ưu (x):**")
                 else:
-                    # Nếu là bước cuối cùng thì không còn biến vào/ra nữa
-                    st.markdown(f"<p style='margin-top: -10px; color: #2563eb; font-weight: bold;'> Bảng tối ưu (Kết thúc giải thuật)</p>", unsafe_allow_html=True)
+                    st.write("**Nghiệm tối ưu (x):**")
+                    
+                for var_name, val in solver.final_vars.items():
+                    st.write(f"- {var_name} = {float(val)}")
+            
+            # Thử vẽ đồ thị
+            fig, plot_msg = solver.plot_feasible_region()
+            if fig is not None:
+                st.pyplot(fig)
+            else:
+                st.info(f"*(Không vẽ đồ thị: {plot_msg})*")
+        
+        # 🟢 IN LỊCH SỬ CÁC BƯỚC TỪ VỰNG 🟢
+        st.markdown('### <i class="fa-solid fa-table-list" style="color: #1e3a8a; margin-right: 8px;"></i> CHI TIẾT TỪ VỰNG (BƯỚC LẶP)', unsafe_allow_html=True)
+        
+        with st.expander("Bấm vào đây để xem chi tiết từng bảng Từ vựng", expanded=True):
+            if not solver.history:
+                st.info("Chưa có bước lặp nào được ghi nhận.")
+            else:
+                current_phase = 0 # Trạng thái theo dõi: 0 = chưa có gì, 1 = Pha 1, 2 = Pha 2
                 
-                # Xác định tên hàm mục tiêu là W (Pha 1) hay Z (Pha 2)
-                func_name = "W" if 'x0' in step['N'] or 'x0' in step['B'] else "Z"
-                
-                # In hàm Z/W
-                z_eq = format_equation(func_name, step['obj'], step['N'])
-                st.markdown(f"<div class='history-eq'><b>{z_eq}</b></div>", unsafe_allow_html=True)
-                
-                # In các phương trình w_i, x_i
-                for b_var in step['B']:
-                    if b_var in step['dict']:
-                        eq_str = format_equation(b_var, step['dict'][b_var], step['N'])
-                        st.markdown(f"<div class='history-eq'>{eq_str}</div>", unsafe_allow_html=True)
-                
-                st.write("") # Tạo khoảng trống
+                for idx, step in enumerate(solver.history):
+                    # Nhận diện hàm mục tiêu là W (Pha 1) hay Z (Pha 2)
+                    func_name = "W" if 'x0' in step['N'] or 'x0' in step['B'] else "Z"
+                    phase_of_this_step = 1 if func_name == "W" else 2
+                    
+                    # 🟢 IN TIÊU ĐỀ PHA 1 / PHA 2 BẰNG FONT AWESOME
+                    if phase_of_this_step == 1 and current_phase == 0:
+                        st.markdown("<h4 style='color: #d97706; margin-top: 10px; margin-bottom: 15px;'><i class='fa-solid fa-flag' style='margin-right: 8px;'></i> BẮT ĐẦU PHA 1 (Tìm phương án cực biên khả thi)</h4>", unsafe_allow_html=True)
+                        current_phase = 1
+                    elif phase_of_this_step == 2 and current_phase == 1:
+                        st.markdown("<hr style='margin: 30px 0; border: 2px dashed #059669;'><h4 style='color: #059669; margin-bottom: 15px;'><i class='fa-solid fa-flag-checkered' style='margin-right: 8px;'></i> KẾT THÚC PHA 1 ➔ BẮT ĐẦU PHA 2 (Tìm nghiệm tối ưu)</h4>", unsafe_allow_html=True)
+                        current_phase = 2
+                    elif phase_of_this_step == 2 and current_phase == 0:
+                        st.markdown("<h4 style='color: #059669; margin-top: 10px; margin-bottom: 15px;'><i class='fa-solid fa-flag-checkered' style='margin-right: 8px;'></i> BẮT ĐẦU PHA 2 (Trực tiếp giải - Không cần qua Pha 1)</h4>", unsafe_allow_html=True)
+                        current_phase = 2
+
+                    # 🟢 IN THÔNG TIN BƯỚC LẶP BẰNG FONT AWESOME
+                    st.markdown(f"<p style='font-size: 1.1rem; font-weight: bold; color: #1e3a8a;'>"
+                                f"<i class='fa-solid fa-caret-right' style='color: #3b82f6; margin-right: 6px;'></i> BƯỚC {idx} "
+                                f"<span style='font-weight: normal; font-size: 0.95rem; color: #475569;'>(Cơ sở B = {step['B']} | Phi cơ sở N = {step['N']})</span></p>", 
+                                unsafe_allow_html=True)
+                    
+                    # Xác định Biến Vào / Biến Ra
+                    if idx < len(solver.history) - 1:
+                        next_step = solver.history[idx + 1]
+                        enter_var = list(set(next_step['B']) - set(step['B']))
+                        leave_var = list(set(step['B']) - set(next_step['B']))
+                        
+                        if enter_var and leave_var:
+                            st.markdown(f"<p style='margin-top: -10px; font-size: 1rem;'>"
+                                        f"<span style='color: #2C5EAD; font-weight: bold;'> Chuẩn bị xoay - Biến vào: {enter_var[0]}</span> &nbsp; | &nbsp; "
+                                        f"<span style='color: #1591DC; font-weight: bold;'>Biến ra: {leave_var[0]}</span></p>", 
+                                        unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"<p style='margin-top: -10px; color: #2563eb; font-weight: bold;'> Bảng tối ưu (Kết thúc giải thuật)</p>", unsafe_allow_html=True)
+                    
+                    # In hàm Z hoặc W
+                    z_eq = format_equation(func_name, step['obj'], step['N'])
+                    st.markdown(f"<div class='history-eq'><b>{z_eq}</b></div>", unsafe_allow_html=True)
+                    
+                    # In hệ phương trình các biến cơ sở
+                    for b_var in step['B']:
+                        if b_var in step['dict']:
+                            eq_str = format_equation(b_var, step['dict'][b_var], step['N'])
+                            st.markdown(f"<div class='history-eq'>{eq_str}</div>", unsafe_allow_html=True)
+                    
+                    st.write("") # Tạo khoảng cách giữa các bước
+                    
+    except ValueError:
+        # Tùy chỉnh hộp cảnh báo lỗi với Font Awesome
+        error_html = """
+        <div style="background-color: #fef2f2; border-left: 6px solid #ef4444; padding: 15px 20px; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.1);">
+            <h4 style="color: #b91c1c; margin-top: 0; margin-bottom: 8px; font-weight: bold;">
+                <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i> LỖI DỮ LIỆU ĐẦU VÀO!
+            </h4>
+            <p style="color: #991b1b; margin: 0; font-size: 1.05rem;">
+                Vui lòng chỉ nhập <b>số</b> (ví dụ: <code>-5</code>, <code>3.14</code>) hoặc <b>phân số</b> (ví dụ: <code>1/2</code>, <code>-3/4</code>). Tuyệt đối không nhập chữ cái hay ký tự lạ nha.
+            </p>
+        </div>
+        """
+        st.markdown(error_html, unsafe_allow_html=True)
