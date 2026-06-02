@@ -938,7 +938,7 @@ if btn_solve:
                 <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i> LỖI DỮ LIỆU ĐẦU VÀO!
             </h4>
             <p style="color: #991b1b; margin: 0; font-size: 1.05rem;">
-                Vui lòng chỉ nhập <b>số</b> (ví dụ: <code>-5</code>, <code>3.14</code>) hoặc <b>phân số</b> (ví dụ: <code>1/2</code>, <code>-3/4</code>). Tuyệt đối không nhập chữ cái hay ký tự lạ nha.
+                Vui lòng chỉ nhập <b>số</b> (ví dụ: <code>-5</code>, <code>3.14</code>) hoặc <b>phân số</b> (ví dụ: <code>1/2</code>, <code>-3/4</code>). Không nhập chữ cái hay ký tự lạ.
             </p>
         </div>
         """
