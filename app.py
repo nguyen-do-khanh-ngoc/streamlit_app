@@ -887,7 +887,7 @@ if btn_solve:
                 
                 for idx, step in enumerate(solver.history):
                     # Nhận diện hàm mục tiêu là W (Pha 1) hay Z (Pha 2)
-                    func_name = "W" if 'x0' in step['N'] or 'x0' in step['B'] else "Z"
+                    func_name = "E" if 'x0' in step['N'] or 'x0' in step['B'] else "Z"
                     phase_of_this_step = 1 if func_name == "W" else 2
                     
                     # 🟢 IN TIÊU ĐỀ PHA 1 / PHA 2 BẰNG FONT AWESOME
@@ -896,9 +896,6 @@ if btn_solve:
                         current_phase = 1
                     elif phase_of_this_step == 2 and current_phase == 1:
                         st.markdown("<hr style='margin: 30px 0; border: 2px dashed #059669;'><h4 style='color: #059669; margin-bottom: 15px;'><i class='fa-solid fa-flag-checkered' style='margin-right: 8px;'></i> KẾT THÚC PHA 1 ➔ BẮT ĐẦU PHA 2 (Tìm nghiệm tối ưu)</h4>", unsafe_allow_html=True)
-                        current_phase = 2
-                    elif phase_of_this_step == 2 and current_phase == 0:
-                        st.markdown("<h4 style='color: #059669; margin-top: 10px; margin-bottom: 15px;'><i class='fa-solid fa-flag-checkered' style='margin-right: 8px;'></i> BẮT ĐẦU PHA 2 (Trực tiếp giải - Không cần qua Pha 1)</h4>", unsafe_allow_html=True)
                         current_phase = 2
 
                     # 🟢 IN THÔNG TIN BƯỚC LẶP BẰNG FONT AWESOME
