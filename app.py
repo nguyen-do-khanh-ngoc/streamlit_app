@@ -812,9 +812,17 @@ def format_equation(var_name, expr_dict, N_vars):
 # ==========================================
 st.write("")
 
-col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+# Chia lại thành 4 cột để chứa 2 nút cho cân đối
+col_btn1, col_btn2, col_btn3, col_btn4 = st.columns([1, 2, 2, 1])
 
 with col_btn2:
+    btn_reset = st.button(
+        "LÀM MỚI",
+        use_container_width=True,
+        icon=":material/refresh:"
+    )
+
+with col_btn3:
     btn_solve = st.button(
         "GIẢI BÀI TOÁN",
         type="primary",
@@ -822,7 +830,12 @@ with col_btn2:
         icon=":material/rocket_launch:"
     )
 
-# Nếu nút được bấm thì chạy thuật toán
+# 🟢 XỬ LÝ NÚT LÀM MỚI: Xóa sạch bộ nhớ và tải lại trang
+if btn_reset:
+    st.session_state.clear()
+    st.rerun()
+
+# Nếu nút giải được bấm thì chạy thuật toán
 if btn_solve:
     try:
         # Bọc khởi tạo trong try-except để bắt lỗi khi Fraction() cố gắng ép kiểu chữ
