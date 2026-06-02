@@ -375,6 +375,9 @@ class SimplexDictionarySolver:
         for x_var in self.N:
             if x_var != 'x0': self.objective_func[x_var] = Fraction(0)
 
+        # 🟢 THÊM DÒNG NÀY ĐỂ LƯU BẢNG TỪ VỰNG KHỞI TẠO (W = x0) 🟢
+        self._save_history(self.objective_func)
+
         # 2. Special Initial Pivot: Ép x0 vào cơ sở, biến ra là w_k có b_k âm nhất
         leaving_var = min(self.B, key=lambda v: (self.dictionary[v]['const'], self._sort_key(v)))
         self.pivot('x0', leaving_var, self.objective_func)
