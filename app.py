@@ -602,30 +602,53 @@ class SimplexDictionarySolver:
         if self.objective_type == 'MAX':
             self.Z_opt = -self.Z_opt
 
-    # ==========================================
+# ==========================================
     # BƯỚC 6: VẼ ĐỒ THỊ MIỀN KHẢ THI (CHỈ HỖ TRỢ 2 BIẾN)
     # ==========================================
     def plot_feasible_region(self):
         """
-        Vẽ miền chấp nhận được lên trục tọa độ 2D.
-        Yêu cầu: Bài toán gốc phải có đúng 2 biến và các biến phải >= 0.
-        Trả về đối tượng Figure của matplotlib để render lên Streamlit.
+        Vẽ miền chấp nhận được lên trục tọa độ 2D cho toàn bộ các góc phần tư.
+        Hỗ trợ biến >= 0, <= 0 và tùy ý.
         """
         if self.original_num_vars != 2:
             return None, "Lỗi: Chỉ hỗ trợ vẽ đồ thị cho bài toán có đúng 2 biến quyết định."
-
-        # Kiểm tra điều kiện >= 0 của 2 biến gốc
-        if self.var_signs[0] != ">=0" or self.var_signs[1] != ">=0":
-            return None, "Lỗi: Đồ thị hiện tại chỉ hỗ trợ các biến gốc có điều kiện >= 0."
 
         # 1. Chuyển đổi ma trận A và b từ Fraction sang float để dùng Numpy
         A_float = np.array([[float(val) for val in row] for row in self.A])
         b_float = np.array([float(val) for val in self.b])
 
-        # 2. Bổ sung 2 đường thẳng của trục tọa độ (x1 >= 0, x2 >= 0)
-        # Tương đương: -1*x1 + 0*x2 <= 0 và 0*x1 + -1*x2 <= 0
-        A_full = np.vstack([A_float, [-1, 0], [0, -1]])
-        b_full = np.append(b_float, [0, 0])
+        # 2. Xây dựng các đường biên dựa trên dấu của biến (>=0, <=0)
+        A_bounds = []
+        b_bounds = []
+
+        # Ràng buộc cho x1
+        if self.var_signs[0] == ">=0":
+            A_bounds.append([-1, 0])
+            b_bounds.append(0)
+        elif self.var_signs[0] == "<=0":
+            A_bounds.append([1, 0])
+            b_bounds.append(0)
+
+        # Ràng buộc cho x2
+        if self.var_signs[1] == ">=0":
+            A_bounds.append([0, -1])
+            b_bounds.append(0)
+        elif self.var_signs[1] == "<=0":
+            A_bounds.append([0, 1])
+            b_bounds.append(0)
+
+        # 💡 MẸO: Thêm một khung giới hạn (Bounding box) cực lớn để vẽ đa giác kín 
+        # trong trường hợp bài toán có biến "Tùy ý" hoặc miền không bị chặn (Unbounded)
+        LIMIT = 1000
+        A_bounds.extend([[1, 0], [-1, 0], [0, 1], [0, -1]])
+        b_bounds.extend([LIMIT, LIMIT, LIMIT, LIMIT])
+
+        # Gộp ma trận gốc và ma trận biên
+        if len(A_float) > 0:
+            A_full = np.vstack([A_float, A_bounds])
+        else:
+            A_full = np.array(A_bounds)
+        b_full = np.append(b_float, b_bounds)
 
         # 3. Tìm TẤT CẢ các giao điểm (Vertices) của các cặp đường thẳng
         num_lines = len(b_full)
@@ -676,16 +699,23 @@ class SimplexDictionarySolver:
             opt_x2 = float(self.final_vars['x2'])
             ax.plot(opt_x1, opt_x2, 'ro', markersize=10, label=f'Tối ưu ({opt_x1:.2f}, {opt_x2:.2f})')
 
-        # Thiết lập trục
-        max_x = np.max(polygon[:, 0]) * 1.5 if np.max(polygon[:, 0]) > 0 else 10
-        max_y = np.max(polygon[:, 1]) * 1.5 if np.max(polygon[:, 1]) > 0 else 10
-        ax.set_xlim(-0.5, max_x)
-        ax.set_ylim(-0.5, max_y)
+        # 7. Thiết lập trục TỌA ĐỘ ĐỘNG (Bao quát cả âm và dương)
+        min_x, max_x = np.min(polygon[:, 0]), np.max(polygon[:, 0])
+        min_y, max_y = np.min(polygon[:, 1]), np.max(polygon[:, 1])
+        
+        # Thêm đệm (padding) 20% xung quanh đa giác để nhìn rõ hơn
+        pad_x = (max_x - min_x) * 0.2 if max_x > min_x else 2
+        pad_y = (max_y - min_y) * 0.2 if max_y > min_y else 2
+
+        ax.set_xlim(min_x - pad_x, max_x + pad_x)
+        ax.set_ylim(min_y - pad_y, max_y + pad_y)
+
+        # Vẽ hai đường trục tung hoành (Ox, Oy) rõ ràng
         ax.axhline(0, color='black', linewidth=1.5)
         ax.axvline(0, color='black', linewidth=1.5)
 
-        ax.set_xlabel('$x_1$', fontsize=12)
-        ax.set_ylabel('$x_2$', fontsize=12)
+        ax.set_xlabel('x1', fontsize=12)
+        ax.set_ylabel('x2', fontsize=12)
         ax.set_title('Đồ thị Miền khả thi 2D', fontsize=14)
         ax.legend()
         ax.grid(True, linestyle='--', alpha=0.5)
