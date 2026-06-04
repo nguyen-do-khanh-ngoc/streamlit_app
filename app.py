@@ -602,32 +602,50 @@ class SimplexDictionarySolver:
         if self.objective_type == 'MAX':
             self.Z_opt = -self.Z_opt
 
-    # ==========================================
+# ==========================================
     # BƯỚC 6: VẼ ĐỒ THỊ MIỀN KHẢ THI (CHỈ HỖ TRỢ 2 BIẾN)
     # ==========================================
     def plot_feasible_region(self):
         """
         Vẽ miền chấp nhận được lên trục tọa độ 2D.
-        Yêu cầu: Bài toán gốc phải có đúng 2 biến và các biến phải >= 0.
-        Trả về đối tượng Figure của matplotlib để render lên Streamlit.
+        Hỗ trợ các điều kiện x >= 0, x <= 0, và x tùy ý.
         """
         if self.original_num_vars != 2:
             return None, "Lỗi: Chỉ hỗ trợ vẽ đồ thị cho bài toán có đúng 2 biến quyết định."
-
-        # Kiểm tra điều kiện >= 0 của 2 biến gốc
-        if self.var_signs[0] != ">=0" or self.var_signs[1] != ">=0":
-            return None, "Lỗi: Đồ thị hiện tại chỉ hỗ trợ các biến gốc có điều kiện >= 0."
 
         # 1. Chuyển đổi ma trận A và b từ Fraction sang float để dùng Numpy
         A_float = np.array([[float(val) for val in row] for row in self.A])
         b_float = np.array([float(val) for val in self.b])
 
-        # 2. Bổ sung 2 đường thẳng của trục tọa độ (x1 >= 0, x2 >= 0)
-        # Tương đương: -1*x1 + 0*x2 <= 0 và 0*x1 + -1*x2 <= 0
-        A_full = np.vstack([A_float, [-1, 0], [0, -1]])
-        b_full = np.append(b_float, [0, 0])
+        extra_A, extra_b = [], []
+        
+        # 2. Xử lý dấu cho biến x1
+        if self.var_signs[0] == ">=0":
+            extra_A.append([-1.0, 0.0]) # -x1 <= 0  (tương đương x1 >= 0)
+            extra_b.append(0.0)
+        elif self.var_signs[0] == "<=0":
+            extra_A.append([1.0, 0.0])  # x1 <= 0
+            extra_b.append(0.0)
+            
+        # 3. Xử lý dấu cho biến x2
+        if self.var_signs[1] == ">=0":
+            extra_A.append([0.0, -1.0]) # -x2 <= 0  (tương đương x2 >= 0)
+            extra_b.append(0.0)
+        elif self.var_signs[1] == "<=0":
+            extra_A.append([0.0, 1.0])  # x2 <= 0
+            extra_b.append(0.0)
+            
+        # 4. Thêm "hàng rào" ẢO cực lớn (M=10000) để đóng kín miền khả thi 
+        # trong trường hợp biến "tùy ý" hoặc miền không bị chặn, giúp code không bị lỗi khi tìm đa giác lồi
+        M = 10000.0
+        extra_A.extend([[1.0, 0.0], [-1.0, 0.0], [0.0, 1.0], [0.0, -1.0]])
+        extra_b.extend([M, M, M, M])
 
-        # 3. Tìm TẤT CẢ các giao điểm (Vertices) của các cặp đường thẳng
+        # Gộp tất cả ràng buộc lại
+        A_full = np.vstack([A_float, extra_A]) if len(extra_A) > 0 else A_float
+        b_full = np.append(b_float, extra_b) if len(extra_b) > 0 else b_float
+
+        # 5. Tìm TẤT CẢ các giao điểm (Vertices) của các cặp đường thẳng
         num_lines = len(b_full)
         points = []
         for i in range(num_lines):
@@ -641,10 +659,10 @@ class SimplexDictionarySolver:
                 except np.linalg.LinAlgError:
                     continue # Bỏ qua nếu 2 đường thẳng song song/trùng nhau
 
-        # 4. Lọc các điểm thỏa mãn TẤT CẢ các ràng buộc (Miền khả thi)
+        # 6. Lọc các điểm thỏa mãn TẤT CẢ các ràng buộc (Miền khả thi)
         valid_points = []
         for pt in points:
-            # Kiểm tra A*pt <= b (Cộng thêm 1e-7 để dung sai sai số dấu phẩy động)
+            # Kiểm tra A*pt <= b (Cộng thêm 1e-7 để dung sai sai số do Numpy)
             if np.all(np.dot(A_full, pt) <= b_full + 1e-7):
                 valid_points.append(pt)
 
@@ -654,13 +672,13 @@ class SimplexDictionarySolver:
         # Loại bỏ các điểm trùng lặp
         valid_points = np.unique(np.round(valid_points, decimals=5), axis=0)
 
-        # 5. Sắp xếp các điểm theo góc để vẽ đa giác lồi (Convex Polygon)
+        # 7. Sắp xếp các điểm theo chiều kim đồng hồ để vẽ đa giác (Convex Polygon)
         center = np.mean(valid_points, axis=0)
         angles = np.arctan2(valid_points[:, 1] - center[1], valid_points[:, 0] - center[0])
         sorted_indices = np.argsort(angles)
         polygon = valid_points[sorted_indices]
 
-        # 6. Khởi tạo hình vẽ Matplotlib
+        # 8. Khởi tạo hình vẽ Matplotlib
         fig, ax = plt.subplots(figsize=(8, 6))
 
         # Vẽ đa giác miền khả thi
@@ -670,17 +688,29 @@ class SimplexDictionarySolver:
         # Vẽ các điểm đỉnh (Vertices)
         ax.plot(polygon[:, 0], polygon[:, 1], 'bo', label='Các đỉnh khả thi')
 
-        # Điểm tối ưu (nếu đã giải xong)
+        # Vẽ điểm tối ưu (nếu đã giải xong)
         if self.status == "OPTIMAL" and hasattr(self, 'final_vars'):
             opt_x1 = float(self.final_vars['x1'])
             opt_x2 = float(self.final_vars['x2'])
             ax.plot(opt_x1, opt_x2, 'ro', markersize=10, label=f'Tối ưu ({opt_x1:.2f}, {opt_x2:.2f})')
 
-        # Thiết lập trục
-        max_x = np.max(polygon[:, 0]) * 1.5 if np.max(polygon[:, 0]) > 0 else 10
-        max_y = np.max(polygon[:, 1]) * 1.5 if np.max(polygon[:, 1]) > 0 else 10
-        ax.set_xlim(-0.5, max_x)
-        ax.set_ylim(-0.5, max_y)
+        # 9. Thiết lập trục tự động co giãn
+        # Loại bỏ những điểm quá lớn (ảo) ra khỏi tính toán giới hạn trục để tránh zoom out quá xa
+        plot_points = np.array([pt for pt in polygon if abs(pt[0]) < M/2 and abs(pt[1]) < M/2])
+        
+        if len(plot_points) > 0:
+            min_x, max_x = np.min(plot_points[:, 0]), np.max(plot_points[:, 0])
+            min_y, max_y = np.min(plot_points[:, 1]), np.max(plot_points[:, 1])
+        else:
+            min_x, max_x, min_y, max_y = -10, 10, -10, 10 # Default fallback
+            
+        padding_x = max(abs(max_x - min_x) * 0.2, 2)
+        padding_y = max(abs(max_y - min_y) * 0.2, 2)
+
+        ax.set_xlim(min_x - padding_x, max_x + padding_x)
+        ax.set_ylim(min_y - padding_y, max_y + padding_y)
+        
+        # Kẻ trục tọa độ x=0, y=0 để dễ nhìn các giá trị âm
         ax.axhline(0, color='black', linewidth=1.5)
         ax.axvline(0, color='black', linewidth=1.5)
 
@@ -691,7 +721,7 @@ class SimplexDictionarySolver:
         ax.grid(True, linestyle='--', alpha=0.5)
 
         return fig, "Success"
-
+        
     # ==========================================
     # HÀM ĐIỀU PHỐI & PHỤ TRỢ
     # ==========================================
