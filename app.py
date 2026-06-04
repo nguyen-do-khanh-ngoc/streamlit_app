@@ -11,8 +11,7 @@ st.markdown('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs
 
 os.makedirs(".streamlit", exist_ok=True)
 with open(".streamlit/config.toml", "w") as f:
-    f.write('[theme]\nprimaryColor="#3b82f6"\n')
-
+    f.write('[theme]\nprimaryColor="#3b82f6"\n')
 # ==========================================
 # 1. CÀI ĐẶT GIAO DIỆN & CSS
 # ==========================================
