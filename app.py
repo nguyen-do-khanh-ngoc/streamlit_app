@@ -602,7 +602,7 @@ class SimplexDictionarySolver:
         if self.objective_type == 'MAX':
             self.Z_opt = -self.Z_opt
 
-# ==========================================
+    # ==========================================
     # BƯỚC 6: VẼ ĐỒ THỊ MIỀN KHẢ THI (CHỈ HỖ TRỢ 2 BIẾN)
     # ==========================================
     def plot_feasible_region(self):
