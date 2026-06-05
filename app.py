@@ -621,7 +621,7 @@ class SimplexDictionarySolver:
         # 1. Dùng ma trận gốc và xử lí dấu ràng buộc
         A_base = []
         b_base = []
-        for i in range(self.orginal_num_constraints):
+        for i in range(self.original_num_constraints):
             row = [float(val) for val in self.orig_A[i]]
             b_val = float(self.orig_b[i])
             sign = self.orig_bound_signs[i]
