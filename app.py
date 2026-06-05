@@ -665,8 +665,8 @@ class SimplexDictionarySolver:
         extra_b.extend([M, M, M, M])
 
         # Gộp tất cả ràng buộc lại
-        A_full = np.vstack([A_float, extra_A]) if len(extra_A) > 0 else A_float
-        b_full = np.append(b_float, extra_b) if len(extra_b) > 0 else b_float
+        A_full = np.vstack([A_base, extra_A]) if len(extra_A) > 0 else np.array(A_base)
+        b_full = np.append(b_base, extra_b) if len(extra_b) > 0 else np.array(b_base)
 
         # 5. Tìm TẤT CẢ các giao điểm (Vertices) của các cặp đường thẳng
         num_lines = len(b_full)
