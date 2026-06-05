@@ -238,6 +238,11 @@ class SimplexDictionarySolver:
 
         self.bound_signs = [sign.strip() for sign in bound_signs]
         self.var_signs = [sign.replace(" ", "") for sign in var_signs]
+        
+        # Lưu lại ma trận gốc để vẽ hình
+        self.orig_A = copy.deepcopy(self.A)
+        self.orig_b = copy.deepcopy(self.b)
+        self.orig_bound_signs = copy.deepcopy(self.bound_signs)
 
         # Trạng thái hệ thống (Từ vựng)
         self.B = [] # Tập biến cơ sở
@@ -613,9 +618,27 @@ class SimplexDictionarySolver:
         if self.original_num_vars != 2:
             return None, "Lỗi: Chỉ hỗ trợ vẽ đồ thị cho bài toán có đúng 2 biến quyết định."
 
-        # 1. Chuyển đổi ma trận A và b từ Fraction sang float để dùng Numpy
-        A_float = np.array([[float(val) for val in row] for row in self.A])
-        b_float = np.array([float(val) for val in self.b])
+        # 1. Dùng ma trận gốc và xử lí dấu ràng buộc
+        A_base = []
+        b_base = []
+        for i in range(self.orginal_num_constraints):
+            row = [float(val) for val in self.orig_A[i]]
+            b_val = float(self.orig_b[i])
+            sign = self.orig_bound_signs[i]
+
+            if sign == '<=':
+                A_base.append(row)
+                b_base.append(b_val)
+            elif sign == '>=':
+                # Đổi chiều để gom về <=
+                A_base.append([-val for val in row])
+                b_base.append(-b_val)
+            elif sign == '=':
+                # Dấu = tách thành <= và >= (>= lại đảo dấu thành <=)
+                A_base.append(row)
+                b_base.append(b_val)
+                A_base.append([-val for val in row])
+                b_base.append(-b_val)
 
         extra_A, extra_b = [], []
         
